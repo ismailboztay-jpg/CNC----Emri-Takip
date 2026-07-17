@@ -34,6 +34,12 @@ label{display:block;font-weight:700;margin-top:12px;}
     <h2>Üretim Durumu</h2>
     <div>Toplam Tamamlanan Parça: <strong id="counter">0</strong></div>
     <div>Parça Döngüsü: <strong id="partLabel">1. parça - Tüm takımlar yeni</strong></div>
+    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+      <button onclick="exportToFile()">Export JSON</button>
+      <button onclick="copyToClipboard()">Copy JSON</button>
+      <button onclick="document.getElementById('importFile').click()">Import JSON</button>
+      <input id="importFile" type="file" accept="application/json" style="display:none" onchange="handleImport(event)">
+    </div>
   </div>
   <div class="grid">
     <div class="panel">
@@ -89,6 +95,57 @@ function loadData(){const value=localStorage.getItem(STORAGE_KEY);if(value){try{
 function kaydet(){
   data._updatedAt = Date.now();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+// --- Export / Import helpers (no server required) ---
+function exportToFile(){
+  try{
+    const text = JSON.stringify(data, null, 2);
+    const blob = new Blob([text], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `cnc-data-${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }catch(e){alert('Dışa aktarma başarısız');}
+}
+
+function copyToClipboard(){
+  try{
+    const txt = JSON.stringify(data);
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(()=>alert('JSON panoya kopyalandı'));
+    } else {
+      const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); alert('JSON panoya kopyalandı');
+    }
+  }catch(e){alert('Kopyalama başarısız');}
+}
+
+function handleImport(evt){
+  const f = evt.target.files && evt.target.files[0];
+  if(!f) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const parsed = JSON.parse(e.target.result);
+      if(parsed && typeof parsed === 'object'){
+        data = Object.assign({}, parsed);
+        // ensure structure
+        if(!Array.isArray(data.bekleyen)) data.bekleyen = [];
+        if(!Array.isArray(data.tamamlanan)) data.tamamlanan = [];
+        if(!('aktif' in data)) data.aktif = null;
+        if(typeof data.counter !== 'number') data.counter = (data.tamamlanan && data.tamamlanan.length) || 0;
+        kaydet(); listele();
+        alert('İçe aktarma tamamlandı');
+      } else alert('Geçersiz dosya');
+    }catch(err){alert('Geçersiz JSON dosyası');}
+  };
+  reader.readAsText(f);
+  // clear input
+  evt.target.value = '';
 }
 function zaman(){return new Date().toLocaleString('tr-TR');}
 function parcaSiklus(parcaNo){return ((parcaNo-1)%4)+1;}
