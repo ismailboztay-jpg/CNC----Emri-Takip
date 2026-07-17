@@ -4,71 +4,124 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>CNC İş Emri Takip</title>
+<title>CNC İş Emri ve Takım Takip Sistemi</title>
 
 <style>
-body {
-    font-family: Arial, sans-serif;
-    background:#f2f2f2;
+
+body{
+    font-family:Arial, sans-serif;
+    background:#eeeeee;
     margin:20px;
 }
 
-h1 {
+
+h1{
     background:#1f4e79;
     color:white;
     padding:15px;
     text-align:center;
+    border-radius:8px;
 }
 
-.panel {
+
+h2{
+    color:#1f4e79;
+}
+
+
+.panel{
+
     background:white;
     padding:20px;
-    border-radius:10px;
     margin-bottom:20px;
+    border-radius:10px;
+    box-shadow:0 0 5px #aaa;
+
 }
 
-input, select, button {
+
+input, select, button{
+
     padding:10px;
     margin:5px;
-    font-size:15px;
+    font-size:14px;
+
 }
 
-input, select {
+
+input, select{
+
     width:180px;
+
 }
 
-button {
+
+button{
+
     background:#1f4e79;
     color:white;
     border:none;
-    cursor:pointer;
     border-radius:5px;
+    cursor:pointer;
+
 }
 
-button:hover {
+
+button:hover{
+
     background:#163a5c;
+
 }
 
-table {
+
+table{
+
     width:100%;
     border-collapse:collapse;
     background:white;
+
 }
 
-th {
+
+th{
+
     background:#1f4e79;
     color:white;
+
 }
 
-td, th {
+
+td, th{
+
     border:1px solid #ccc;
     padding:8px;
     text-align:center;
+
 }
 
-.sil {
+
+.sil{
+
     background:#c00000;
+
 }
+
+
+.uyari{
+
+    background:#ffc000;
+    color:black;
+
+}
+
+
+.aktif{
+
+    background:#70ad47;
+    color:white;
+
+}
+
 
 </style>
 
@@ -77,12 +130,18 @@ td, th {
 
 <body>
 
-<h1>CNC İş Emri Takip Sistemi</h1>
 
+<h1>
+CNC İş Emri ve Takım Takip Sistemi
+</h1>
+
+
+<!-- İŞ EMRİ BÖLÜMÜ -->
 
 <div class="panel">
 
-<h2>Yeni İş Emri</h2>
+<h2>📋 Yeni İş Emri</h2>
+
 
 <input id="isno" placeholder="İş No">
 
@@ -90,12 +149,15 @@ td, th {
 
 <input id="musteri" placeholder="Müşteri">
 
+
 <select id="tezgah">
-<option>Makine Seç</option>
+
+<option>Tezgah Seç</option>
 <option>Matsuura</option>
 <option>Emco</option>
-<option>Siemens</option>
+<option>DMG</option>
 <option>Diğer</option>
+
 </select>
 
 
@@ -108,7 +170,9 @@ td, th {
 </select>
 
 
-<button onclick="ekle()">Kaydet</button>
+<button onclick="isEkle()">
+İş Emri Kaydet
+</button>
 
 
 </div>
@@ -117,7 +181,7 @@ td, th {
 
 <div class="panel">
 
-<h2>İş Emirleri</h2>
+<h2>📋 İş Emirleri</h2>
 
 
 <table>
@@ -125,18 +189,20 @@ td, th {
 <thead>
 
 <tr>
+
 <th>İş No</th>
 <th>Parça</th>
 <th>Müşteri</th>
 <th>Tezgah</th>
 <th>Durum</th>
 <th>Sil</th>
+
 </tr>
 
 </thead>
 
 
-<tbody id="liste">
+<tbody id="isListesi">
 
 </tbody>
 
@@ -148,23 +214,111 @@ td, th {
 
 
 
+
+
+<!-- TAKIM BÖLÜMÜ -->
+
+
+<div class="panel">
+
+
+<h2>🔧 Takım Takip</h2>
+
+
+<input id="takimNo" placeholder="Takım No (T01)">
+
+
+<input id="takimKod" placeholder="Takım Kodu">
+
+
+<input id="takimAdi" placeholder="Takım Adı">
+
+
+<input id="omur" placeholder="Max Ömür">
+
+
+<input id="kullanim" placeholder="Kullanım">
+
+
+<select id="takimDurum">
+
+<option>Aktif</option>
+<option>Değişecek</option>
+<option>Hurda</option>
+
+</select>
+
+
+<button onclick="takimEkle()">
+
+Takım Kaydet
+
+</button>
+
+
+</div>
+
+
+
+<div class="panel">
+
+
+<h2>🔧 Takım Listesi</h2>
+
+
+<table>
+
+
+<thead>
+
+<tr>
+
+<th>T No</th>
+<th>Kod</th>
+<th>Takım</th>
+<th>Ömür</th>
+<th>Kalan</th>
+<th>Durum</th>
+<th>Sil</th>
+
+</tr>
+
+
+</thead>
+
+
+<tbody id="takimListesi">
+
+</tbody>
+
+
+</table>
+
+
+</div>
 <script>
+
+
+// ==========================
+// İŞ EMRİ SİSTEMİ
+// ==========================
 
 
 let isler = JSON.parse(localStorage.getItem("isler")) || [];
 
 
-function goster(){
+function isGoster(){
 
-let tablo=document.getElementById("liste");
+
+let tablo=document.getElementById("isListesi");
 
 tablo.innerHTML="";
 
 
-isler.forEach((x,index)=>{
+isler.forEach((x,i)=>{
 
 
-let satir=`
+tablo.innerHTML += `
 
 <tr>
 
@@ -179,7 +333,7 @@ let satir=`
 <td>${x.durum}</td>
 
 <td>
-<button class="sil" onclick="sil(${index})">
+<button class="sil" onclick="isSil(${i})">
 Sil
 </button>
 </td>
@@ -188,10 +342,6 @@ Sil
 
 `;
 
-
-tablo.innerHTML+=satir;
-
-
 });
 
 
@@ -199,7 +349,7 @@ tablo.innerHTML+=satir;
 
 
 
-function ekle(){
+function isEkle(){
 
 
 let yeni={
@@ -220,31 +370,208 @@ durum:document.getElementById("durum").value
 isler.push(yeni);
 
 
-localStorage.setItem("isler",JSON.stringify(isler));
+localStorage.setItem(
+"isler",
+JSON.stringify(isler)
+);
 
 
-goster();
-
-
-document.querySelectorAll("input").forEach(x=>x.value="");
+isGoster();
 
 
 }
 
 
 
-function sil(i){
+function isSil(i){
+
 
 isler.splice(i,1);
 
-localStorage.setItem("isler",JSON.stringify(isler));
 
-goster();
+localStorage.setItem(
+"isler",
+JSON.stringify(isler)
+);
+
+
+isGoster();
+
 
 }
 
 
-goster();
+
+
+
+// ==========================
+// TAKIM SİSTEMİ
+// ==========================
+
+
+let takimlar = JSON.parse(localStorage.getItem("takimlar")) || [];
+
+
+
+function takimGoster(){
+
+
+let tablo=document.getElementById("takimListesi");
+
+tablo.innerHTML="";
+
+
+takimlar.forEach((x,i)=>{
+
+
+let kalan = x.omur - x.kullanim;
+
+
+let durum=x.durum;
+
+
+if(kalan<=0){
+
+durum="HURDA";
+
+}
+
+else if(kalan<10){
+
+durum="DEĞİŞECEK";
+
+}
+
+
+
+tablo.innerHTML += `
+
+
+<tr>
+
+
+<td>${x.no}</td>
+
+<td>${x.kod}</td>
+
+<td>${x.adi}</td>
+
+<td>${x.omur}</td>
+
+<td>${kalan}</td>
+
+<td>${durum}</td>
+
+
+<td>
+
+<button class="sil" onclick="takimSil(${i})">
+
+Sil
+
+</button>
+
+</td>
+
+
+</tr>
+
+
+`;
+
+
+});
+
+
+}
+
+
+
+
+
+function takimEkle(){
+
+
+
+let yeni={
+
+
+no:document.getElementById("takimNo").value,
+
+
+kod:document.getElementById("takimKod").value,
+
+
+adi:document.getElementById("takimAdi").value,
+
+
+omur:Number(document.getElementById("omur").value),
+
+
+kullanim:Number(document.getElementById("kullanim").value),
+
+
+durum:document.getElementById("takimDurum").value
+
+
+
+};
+
+
+
+takimlar.push(yeni);
+
+
+
+localStorage.setItem(
+
+"takimlar",
+
+JSON.stringify(takimlar)
+
+);
+
+
+
+takimGoster();
+
+
+
+}
+
+
+
+
+
+function takimSil(i){
+
+
+takimlar.splice(i,1);
+
+
+localStorage.setItem(
+
+"takimlar",
+
+JSON.stringify(takimlar)
+
+);
+
+
+
+takimGoster();
+
+
+}
+
+
+
+
+// Sayfa açılışında yükle
+
+isGoster();
+
+takimGoster();
 
 
 </script>
