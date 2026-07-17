@@ -78,6 +78,35 @@ color:red;
 font-weight:bold;
 }
 
+.status-button{
+display:inline-block;
+padding:6px 10px;
+margin-top:8px;
+border-radius:5px;
+border:0;
+cursor:pointer;
+color:white;
+}
+
+.status-button.eski{
+background:#d9534f;
+}
+
+.status-button.yeni{
+background:#5cb85c;
+}
+
+.change-label{
+display:inline-block;
+padding:4px 8px;
+margin-top:6px;
+background:#fff4cc;
+color:#7a5800;
+border-radius:6px;
+font-size:0.9em;
+font-weight:600;
+}
+
 </style>
 
 </head>
@@ -122,6 +151,9 @@ Yeni İş Oluştur
 <div class="panel">
 
 <h2>Bekleyen İşler</h2>
+
+<label for="aktifEdenInput">Aktif eden kişi:</label><br>
+<input id="aktifEdenInput" placeholder="Aktif eden kişi">
 
 <div id="bekleyen"></div>
 
@@ -196,13 +228,44 @@ let takimListesi=[
 
 ];
 
+let degisecekParcada=[
+"T08_ME0173_16MM_RGH",
+"T15_MR0225_12MM_EM",
+"T04_ME0252_12MM_EM",
+"T09_ME0067_12MM_EM_RGH",
+"T23_MR0357_20MM_5F",
+"T22_AT0801_16MM_RGH",
+"T21_AT0801_16MM_FIN",
+"T24_PME0003_10MM_EM",
+"T19_MB0107_10MM_3TA_CON_BN",
+"T20_AT0747_10MM_5FLT",
+"T26_AT0748_NEW_SC_RGH",
+"T25_AT0748_NEW_SC_FIN",
+"T12_ME0250_8MM_EM",
+"T13_MR0224_10MM_EM",
+"T10_ME0067_12MM_EM_FIN"
+];
+
+let degisecekUcParcada=[
+"T01_AT0806_NC_PUNTA",
+"T02_DR0420_9.7MM",
+"T03_AT867_10MM",
+"T05_DR0504_10.5MM_MATKAP",
+"T06_AT0662_0.458_EM_RM",
+"T07_AT0663_.468_EM_RM",
+"T11_AT0688_10MM_ENDMILL",
+"T14_MB0106_8MM_CON_BN",
+"T16_MB0108_P6D_4TA",
+"T17_AT0702_10MM_5FLT"
+];
+
 
 let data =
 JSON.parse(localStorage.getItem("cncData"))
 ||
 {
 bekleyen:[],
-aktif:null,
+a k t i f:null,
 tamamlanan:[],
 counter:0
 };
