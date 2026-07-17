@@ -135,7 +135,13 @@ Yeni İş Oluştur
 
 </div>
 
+<div class="panel">
 
+<h2>🔧 Takım Durumu</h2>
+
+<div id="takimlar"></div>
+
+</div>
 
 
 
@@ -164,7 +170,57 @@ tamamlanan:[],
 counter:0
 };
 
+let takimlar=[
 
+"T01_AT0806_NC_PUNTA",
+"T02_DR0420_9.7MM",
+"T03_AT867_10MM",
+"T04_ME0252_12MM_EM",
+"T05_DR0504_10.5MM_MATKAP",
+"T06_AT0662_0.458_EM_RM",
+"T07_AT0663_.468_EM_RM",
+"T08_ME0173_16MM_RGH",
+"T09_ME0067_12MM_EM_RGH",
+"T10_ME0067_12MM_EM_FIN",
+"T11_AT0688_10MM_ENDMILL",
+"T12_ME0250_8MM_EM",
+"T13_MR0224_10MM_EM",
+"T14_MB0106_8MM_CON_BN",
+"T15_MR0225_12MM_EM",
+"T16_MB0108_P6D_4TA",
+"T17_AT0702_10MM_5FLT",
+"T19_MB0107_10MM_3TA_CON_BN",
+"T20_AT0747_10MM_5FLT",
+"T21_AT0801_16MM_FIN",
+"T22_AT0801_16MM_RGH",
+"T23_MR0357_20MM_5F",
+"T24_PME0003_10MM_EM",
+"T25_AT0748_NEW_SC_FIN",
+"T26_AT0748_NEW_SC_RGH"
+
+];
+
+
+
+let takimDurum =
+JSON.parse(localStorage.getItem("takimDurum"))
+||
+{};
+
+
+
+
+takimlar.forEach(t=>{
+
+if(!takimDurum[t]){
+
+takimDurum[t]={
+durum:"ESKİ"
+};
+
+}
+
+});
 
 function kaydet(){
 
