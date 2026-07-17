@@ -609,11 +609,70 @@ Tekrar Aktif Yap
 
 document.getElementById("tamamlanan").innerHTML=t;
 
+// TAKIMLARI GÖSTER
 
+let tk="";
+
+
+takimlar.forEach(t=>{
+
+
+tk += `
+
+<div class="is">
+
+<b>${t}</b>
+
+<br>
+
+Durum:
+${takimDurum[t].durum}
+
+
+<button onclick="takimDegistir('${t}')">
+
+Değiştir
+
+</button>
+
+
+</div>
+
+
+`;
+
+});
+
+
+document.getElementById("takimlar").innerHTML=tk;
+
+}
+
+function takimDegistir(t){
+
+
+if(takimDurum[t].durum=="ESKİ"){
+
+takimDurum[t].durum="YENİ";
+
+}
+else{
+
+takimDurum[t].durum="ESKİ";
 
 }
 
 
+localStorage.setItem(
+"takimDurum",
+JSON.stringify(takimDurum)
+);
+
+
+listele();
+
+
+}
 
 listele();
 
