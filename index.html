@@ -9,124 +9,76 @@
 
 <title>CNC İş Emri Takip</title>
 
-
 <style>
 
-
 body{
-
 font-family:Arial;
 background:#eeeeee;
 margin:20px;
-
 }
 
-
 h1{
-
 background:#1f4e79;
 color:white;
 padding:15px;
 text-align:center;
 border-radius:10px;
-
 }
 
-
 .panel{
-
 background:white;
 padding:15px;
 margin-bottom:20px;
 border-radius:10px;
-
 }
-
-
 
 input{
-
 padding:10px;
 margin:5px;
-
 }
 
-
-
 button{
-
 padding:10px;
 background:#1f4e79;
 color:white;
 border:0;
 border-radius:5px;
 cursor:pointer;
-
 }
-
-
 
 button:hover{
-
 background:#163a5c;
-
 }
 
-
-
 .is{
-
 border:1px solid #aaa;
 padding:10px;
 margin:10px;
 border-radius:8px;
-
 }
-
-
 
 .aktif{
-
 background:#c6efce;
-
 }
-
-
 
 .tamam{
-
-background:#dddddd;
-
+background:#ddd;
 }
-
-
 
 .eski{
-
 background:#ffcccc;
-
 }
-
-
 
 .yeni{
-
 background:#99ff99;
-
 }
-
-
 
 .degis{
-
 color:red;
 font-weight:bold;
-
 }
 
-
 </style>
-
 
 </head>
 
@@ -139,7 +91,6 @@ CNC İŞ EMRİ TAKİP SİSTEMİ
 </h1>
 
 
-
 <div class="panel">
 
 <h2>Üretim Durumu</h2>
@@ -148,9 +99,7 @@ Tamamlanan Parça:
 
 <b id="counter">0</b>
 
-
 </div>
-
 
 
 
@@ -158,9 +107,7 @@ Tamamlanan Parça:
 
 <h2>Yeni İş Emri</h2>
 
-
 <input id="isNo" placeholder="İş Emri No">
-
 
 <button onclick="yeniIs()">
 
@@ -168,10 +115,7 @@ Yeni İş Oluştur
 
 </button>
 
-
 </div>
-
-
 
 
 
@@ -181,10 +125,7 @@ Yeni İş Oluştur
 
 <div id="bekleyen"></div>
 
-
 </div>
-
-
 
 
 
@@ -194,44 +135,35 @@ Yeni İş Oluştur
 
 <div id="aktif"></div>
 
-
 </div>
-
-
 
 
 
 <div class="panel">
 
-<h2>Takım Durumu</h2>
+<h2>🔧 Takım Durumu</h2>
 
 <div id="takimlar">
-
 Aktif iş yok
-
 </div>
 
-
 </div>
-
-
 
 
 
 <div class="panel">
 
-<h2>Tamamlanan İşler</h2>
+<h2>✅ Tamamlanan İşler</h2>
 
 <div id="tamamlanan"></div>
-
 
 </div>
 
 
 <script>
-    // ===============================
-// VERİ SİSTEMİ
-// ===============================
+
+
+let gosterTakim=false;
 
 
 let takimListesi=[
@@ -265,26 +197,32 @@ let takimListesi=[
 ];
 
 
-
-
-
 let data =
 JSON.parse(localStorage.getItem("cncData"))
 ||
 {
-
 bekleyen:[],
 aktif:null,
 tamamlanan:[],
 counter:0
-
 };
 
 
+function kaydet(){
+
+localStorage.setItem(
+"cncData",
+JSON.stringify(data)
+);
+
+}
 
 
+function zaman(){
 
+return new Date().toLocaleString("tr-TR");
 
+}
 // ===============================
 // YENİ İŞ İÇİN TAKIM OLUŞTUR
 // ===============================
@@ -294,7 +232,6 @@ function yeniTakimDurumu(){
 
 
 let liste={};
-
 
 
 takimListesi.forEach(t=>{
@@ -324,44 +261,10 @@ return liste;
 
 
 
-function kaydet(){
-
-
-localStorage.setItem(
-
-"cncData",
-
-JSON.stringify(data)
-
-);
-
-
-}
-
-
-
-
-
-
-function zaman(){
-
-
-return new Date().toLocaleString("tr-TR");
-
-
-}
-
-
-
-
-
-
-
 
 // ===============================
-// YENİ İŞ EMRİ
+// YENİ İŞ OLUŞTUR
 // ===============================
-
 
 
 function yeniIs(){
@@ -391,10 +294,19 @@ let yeni={
 no:no,
 
 
+olusturma:zaman(),
+
+
 takimlar:yeniTakimDurumu(),
 
 
-olusturma:zaman()
+aktifZaman:"",
+
+aktifEden:"",
+
+tamamZaman:"",
+
+tamamlayan:""
 
 
 };
@@ -428,9 +340,8 @@ document.getElementById("isNo").value="";
 
 
 // ===============================
-// AKTİF ET
+// İŞİ AKTİF ET
 // ===============================
-
 
 
 function aktifEt(index){
@@ -440,7 +351,7 @@ function aktifEt(index){
 if(data.aktif!=null){
 
 
-alert("Başka aktif iş var");
+alert("Zaten aktif iş var");
 
 
 return;
@@ -453,9 +364,7 @@ return;
 
 
 let kisi=prompt(
-
 "Aktif eden kişi:"
-
 );
 
 
@@ -463,7 +372,7 @@ let kisi=prompt(
 if(!kisi){
 
 
-alert("İsim girmeden aktif edilemez");
+alert("İsim giriniz");
 
 
 return;
@@ -508,20 +417,28 @@ listele();
 
 
 
-// ===============================
-// TAMAMLA
-// ===============================
 
+
+// ===============================
+// İŞ TAMAMLA
+// ===============================
 
 
 function tamamla(){
 
 
 
+if(!data.aktif){
+
+return;
+
+}
+
+
+
+
 let kisi=prompt(
-
 "Tamamlayan kişi:"
-
 );
 
 
@@ -529,13 +446,14 @@ let kisi=prompt(
 if(!kisi){
 
 
-alert("İsim girmeden tamamlanamaz");
+alert("İsim giriniz");
 
 
 return;
 
 
 }
+
 
 
 
@@ -568,24 +486,48 @@ listele();
 }
 
 
+
+
+
+
+
+
+
 // ===============================
-// TAKIM DEĞİŞTİR
+// TAKIM DURUMU DEĞİŞTİR
 // ===============================
 
 
 function takimDegistir(t){
 
 
-if(data.aktif.takimlar[t].durum=="ESKİ"){
+
+let kisi=prompt(
+"Takımı değiştiren kişi:"
+);
 
 
-data.aktif.takimlar[t].durum="YENİ";
 
-data.aktif.takimlar[t].degistiren=
-prompt("Değiştiren kişi:");
+if(!kisi){
 
-data.aktif.takimlar[t].tarih=
-zaman();
+return;
+
+}
+
+
+
+let takim=data.aktif.takimlar[t];
+
+
+
+if(takim.durum=="ESKİ"){
+
+
+takim.durum="YENİ";
+
+takim.degistiren=kisi;
+
+takim.tarih=zaman();
 
 
 }
@@ -593,18 +535,20 @@ zaman();
 else{
 
 
-data.aktif.takimlar[t].durum="ESKİ";
+takim.durum="ESKİ";
 
-data.aktif.takimlar[t].degistiren="";
+takim.degistiren="";
 
-data.aktif.takimlar[t].tarih="";
+takim.tarih="";
 
 
 }
 
 
 
+
 kaydet();
+
 
 listele();
 
@@ -618,17 +562,27 @@ listele();
 
 
 
-// ===============================
-// SÜRE HESAPLA
-// ===============================
 
+
+// ===============================
+// SÜRE HESABI
+// ===============================
 
 
 function sureHesapla(a,b){
 
 
+
 let fark =
 new Date(b)-new Date(a);
+
+
+
+if(isNaN(fark)){
+
+return "";
+
+}
 
 
 
@@ -646,20 +600,10 @@ Math.floor(
 
 return saat+" saat "+dakika+" dakika";
 
-
 }
-
-
-
-
-
-
-
-
 // ===============================
-// EKRAN YAZDIR
+// EKRAN YAZDIRMA
 // ===============================
-
 
 
 function listele(){
@@ -673,7 +617,7 @@ data.counter;
 
 
 
-// BEKLEYENLER
+// BEKLEYEN İŞLER
 
 
 let b="";
@@ -712,9 +656,7 @@ ${x.olusturma}
 });
 
 
-
 document.getElementById("bekleyen").innerHTML=b;
-
 
 
 
@@ -729,8 +671,8 @@ document.getElementById("bekleyen").innerHTML=b;
 let a="";
 
 
-if(data.aktif){
 
+if(data.aktif){
 
 
 a=`
@@ -738,7 +680,9 @@ a=`
 <div class="is aktif">
 
 
-<h3>${data.aktif.no}</h3>
+<h3>
+${data.aktif.no}
+</h3>
 
 
 Aktif Eden:
@@ -765,8 +709,8 @@ Tamamla
 </button>
 
 
-</div>
 
+</div>
 
 `;
 
@@ -781,6 +725,7 @@ else{
 
 
 a="Aktif iş yok";
+
 
 gosterTakim=false;
 
@@ -805,6 +750,7 @@ document.getElementById("aktif").innerHTML=a;
 let tk="";
 
 
+
 if(gosterTakim){
 
 
@@ -817,20 +763,22 @@ let bilgi=data.aktif.takimlar[t];
 
 
 
-let sinif="eski";
+let renk="eski";
+
 
 
 if(bilgi.durum=="YENİ"){
 
-sinif="yeni";
+renk="yeni";
 
 }
 
 
 
+
 tk+=`
 
-<div class="is ${sinif}">
+<div class="is ${renk}">
 
 
 <b>${t}</b>
@@ -850,7 +798,7 @@ ${bilgi.durum}
 
 
 ${
-bilgi.degistiren!=""
+bilgi.degistiren
 ?
 "Değiştiren: "+bilgi.degistiren+"<br>"
 :
@@ -860,7 +808,7 @@ bilgi.degistiren!=""
 
 
 ${
-bilgi.tarih!=""
+bilgi.tarih
 ?
 "Tarih: "+bilgi.tarih
 :
@@ -872,13 +820,11 @@ bilgi.tarih!=""
 <br>
 
 
-
 <button onclick="takimDegistir('${t}')">
 
-Eski / Yeni
+Değiştir
 
 </button>
-
 
 
 </div>
@@ -913,9 +859,7 @@ document.getElementById("takimlar").innerHTML=tk;
 
 
 
-
 // TAMAMLANANLAR
-
 
 
 let t="";
@@ -937,25 +881,17 @@ t+=`
 <br>
 
 
-Aktif:
-
-${x.aktifZaman}
-
-
-<br>
-
-
-Tamam:
-
-${x.tamamZaman}
-
-
-<br>
-
-
 Aktif Eden:
 
 ${x.aktifEden}
+
+
+<br>
+
+
+Aktif Zaman:
+
+${x.aktifZaman}
 
 
 <br>
@@ -969,7 +905,16 @@ ${x.tamamlayan}
 <br>
 
 
-Süre:
+Tamam Zaman:
+
+${x.tamamZaman}
+
+
+
+<br>
+
+
+Toplam Süre:
 
 ${sureHesapla(
 x.aktifZaman,
@@ -987,6 +932,7 @@ x.tamamZaman
 Tekrar Aktif Yap
 
 </button>
+
 
 
 </div>
@@ -1012,8 +958,10 @@ document.getElementById("tamamlanan").innerHTML=t;
 
 
 
+
+
 // ===============================
-// TAMAMLANAN İŞİ GERİ AL
+// TAMAMLANAN İŞİ AKTİF YAP
 // ===============================
 
 
@@ -1044,7 +992,9 @@ data.tamamlanan.splice(index,1);
 
 is.aktifZaman=zaman();
 
+
 is.aktifEden="Tekrar aktif edildi";
+
 
 
 data.aktif=is;
@@ -1052,6 +1002,7 @@ data.aktif=is;
 
 
 kaydet();
+
 
 listele();
 
@@ -1066,10 +1017,19 @@ listele();
 
 
 
-// PROGRAM BAŞLAT
 
-
-let gosterTakim=false;
+// ===============================
+// BAŞLAT
+// ===============================
 
 
 listele();
+
+
+
+</script>
+
+
+</body>
+
+</html>
