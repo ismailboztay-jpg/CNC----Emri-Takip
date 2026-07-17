@@ -1,125 +1,68 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>CNC İş Emri ve Takım Takip Sistemi</title>
+<title>CNC İş Emri Takip</title>
 
 <style>
 
 body{
-    font-family:Arial, sans-serif;
-    background:#eeeeee;
-    margin:20px;
+font-family:Arial;
+background:#eeeeee;
+margin:20px;
 }
-
 
 h1{
-    background:#1f4e79;
-    color:white;
-    padding:15px;
-    text-align:center;
-    border-radius:8px;
+background:#1f4e79;
+color:white;
+padding:15px;
+text-align:center;
 }
-
-
-h2{
-    color:#1f4e79;
-}
-
 
 .panel{
-
-    background:white;
-    padding:20px;
-    margin-bottom:20px;
-    border-radius:10px;
-    box-shadow:0 0 5px #aaa;
-
+background:white;
+padding:15px;
+margin-bottom:20px;
+border-radius:10px;
 }
 
-
-input, select, button{
-
-    padding:10px;
-    margin:5px;
-    font-size:14px;
-
+input,button{
+padding:10px;
+margin:5px;
 }
-
-
-input, select{
-
-    width:180px;
-
-}
-
 
 button{
-
-    background:#1f4e79;
-    color:white;
-    border:none;
-    border-radius:5px;
-    cursor:pointer;
-
+background:#1f4e79;
+color:white;
+border:0;
+cursor:pointer;
+border-radius:5px;
 }
-
 
 button:hover{
-
-    background:#163a5c;
-
+background:#163a5c;
 }
 
-
-table{
-
-    width:100%;
-    border-collapse:collapse;
-    background:white;
-
+.is{
+border:1px solid #aaa;
+padding:10px;
+margin:10px;
+border-radius:5px;
 }
-
-
-th{
-
-    background:#1f4e79;
-    color:white;
-
-}
-
-
-td, th{
-
-    border:1px solid #ccc;
-    padding:8px;
-    text-align:center;
-
-}
-
-
-.sil{
-
-    background:#c00000;
-
-}
-
-
-.uyari{
-
-    background:#ffc000;
-    color:black;
-
-}
-
 
 .aktif{
+background:#c6efce;
+}
 
-    background:#70ad47;
-    color:white;
+.tamam{
+background:#ddd;
+}
 
+.sil{
+background:red;
 }
 
 
@@ -132,46 +75,36 @@ td, th{
 
 
 <h1>
-CNC İş Emri ve Takım Takip Sistemi
+CNC İŞ EMRİ TAKİP SİSTEMİ
 </h1>
 
 
-<!-- İŞ EMRİ BÖLÜMÜ -->
+<div class="panel">
+
+<h2>Üretim Durumu</h2>
+
+Tamamlanan Parça:
+
+<b id="counter">
+0
+</b>
+
+
+</div>
+
+
 
 <div class="panel">
 
-<h2>📋 Yeni İş Emri</h2>
+<h2>Yeni İş Emri</h2>
 
 
-<input id="isno" placeholder="İş No">
-
-<input id="parca" placeholder="Parça Adı">
-
-<input id="musteri" placeholder="Müşteri">
+<input id="isNo"
+placeholder="İş Emri No">
 
 
-<select id="tezgah">
-
-<option>Tezgah Seç</option>
-<option>Matsuura</option>
-<option>Emco</option>
-<option>DMG</option>
-<option>Diğer</option>
-
-</select>
-
-
-<select id="durum">
-
-<option>Bekliyor</option>
-<option>Devam Ediyor</option>
-<option>Tamamlandı</option>
-
-</select>
-
-
-<button onclick="isEkle()">
-İş Emri Kaydet
+<button onclick="yeniIs()">
+Yeni İş Oluştur
 </button>
 
 
@@ -179,35 +112,12 @@ CNC İş Emri ve Takım Takip Sistemi
 
 
 
+
 <div class="panel">
 
-<h2>📋 İş Emirleri</h2>
+<h2>Bekleyen İşler</h2>
 
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>İş No</th>
-<th>Parça</th>
-<th>Müşteri</th>
-<th>Tezgah</th>
-<th>Durum</th>
-<th>Sil</th>
-
-</tr>
-
-</thead>
-
-
-<tbody id="isListesi">
-
-</tbody>
-
-
-</table>
+<div id="bekleyen"></div>
 
 
 </div>
@@ -216,325 +126,150 @@ CNC İş Emri ve Takım Takip Sistemi
 
 
 
-<!-- TAKIM BÖLÜMÜ -->
-
-
 <div class="panel">
 
+<h2>Aktif İş</h2>
 
-<h2>🔧 Takım Takip</h2>
-
-
-<input id="takimNo" placeholder="Takım No (T01)">
-
-
-<input id="takimKod" placeholder="Takım Kodu">
-
-
-<input id="takimAdi" placeholder="Takım Adı">
-
-
-<input id="omur" placeholder="Max Ömür">
-
-
-<input id="kullanim" placeholder="Kullanım">
-
-
-<select id="takimDurum">
-
-<option>Aktif</option>
-<option>Değişecek</option>
-<option>Hurda</option>
-
-</select>
-
-
-<button onclick="takimEkle()">
-
-Takım Kaydet
-
-</button>
+<div id="aktif"></div>
 
 
 </div>
 
 
 
+
+
+
 <div class="panel">
 
+<h2>Tamamlanan İşler</h2>
 
-<h2>🔧 Takım Listesi</h2>
-
-
-<table>
-
-
-<thead>
-
-<tr>
-
-<th>T No</th>
-<th>Kod</th>
-<th>Takım</th>
-<th>Ömür</th>
-<th>Kalan</th>
-<th>Durum</th>
-<th>Sil</th>
-
-</tr>
-
-
-</thead>
-
-
-<tbody id="takimListesi">
-
-</tbody>
-
-
-</table>
+<div id="tamamlanan"></div>
 
 
 </div>
+
+
+
 <script>
 
 
-// ==========================
-// İŞ EMRİ SİSTEMİ
-// ==========================
-
-
-let isler = JSON.parse(localStorage.getItem("isler")) || [];
-
-
-function isGoster(){
-
-
-let tablo=document.getElementById("isListesi");
-
-tablo.innerHTML="";
-
-
-isler.forEach((x,i)=>{
-
-
-tablo.innerHTML += `
-
-<tr>
-
-<td>${x.no}</td>
-
-<td>${x.parca}</td>
-
-<td>${x.musteri}</td>
-
-<td>${x.tezgah}</td>
-
-<td>${x.durum}</td>
-
-<td>
-<button class="sil" onclick="isSil(${i})">
-Sil
-</button>
-</td>
-
-</tr>
-
-`;
-
-});
-
-
-}
-
-
-
-function isEkle(){
-
-
-let yeni={
-
-no:document.getElementById("isno").value,
-
-parca:document.getElementById("parca").value,
-
-musteri:document.getElementById("musteri").value,
-
-tezgah:document.getElementById("tezgah").value,
-
-durum:document.getElementById("durum").value
-
+let data =
+JSON.parse(localStorage.getItem("cncData"))
+||
+{
+bekleyen:[],
+aktif:null,
+tamamlanan:[],
+counter:0
 };
 
 
-isler.push(yeni);
 
-
-localStorage.setItem(
-"isler",
-JSON.stringify(isler)
-);
-
-
-isGoster();
-
-
-}
-
-
-
-function isSil(i){
-
-
-isler.splice(i,1);
-
+function kaydet(){
 
 localStorage.setItem(
-"isler",
-JSON.stringify(isler)
+"cncData",
+JSON.stringify(data)
 );
 
+}
 
-isGoster();
 
+
+
+function zaman(){
+
+return new Date().toLocaleString("tr-TR");
 
 }
 
 
 
 
-
-// ==========================
-// TAKIM SİSTEMİ
-// ==========================
+function yeniIs(){
 
 
-let takimlar = JSON.parse(localStorage.getItem("takimlar")) || [];
+let no=document.getElementById("isNo").value;
 
 
-
-function takimGoster(){
-
-
-let tablo=document.getElementById("takimListesi");
-
-tablo.innerHTML="";
-
-
-takimlar.forEach((x,i)=>{
-
-
-let kalan = x.omur - x.kullanim;
-
-
-let durum=x.durum;
-
-
-if(kalan<=0){
-
-durum="HURDA";
-
-}
-
-else if(kalan<10){
-
-durum="DEĞİŞECEK";
-
+if(no=="")
+{
+alert("İş emri numarası giriniz");
+return;
 }
 
 
+data.bekleyen.push({
 
-tablo.innerHTML += `
-
-
-<tr>
-
-
-<td>${x.no}</td>
-
-<td>${x.kod}</td>
-
-<td>${x.adi}</td>
-
-<td>${x.omur}</td>
-
-<td>${kalan}</td>
-
-<td>${durum}</td>
-
-
-<td>
-
-<button class="sil" onclick="takimSil(${i})">
-
-Sil
-
-</button>
-
-</td>
-
-
-</tr>
-
-
-`;
-
+no:no
 
 });
 
 
+kaydet();
+
+listele();
+
+
+document.getElementById("isNo").value="";
+
+
 }
 
 
 
 
 
-function takimEkle(){
+
+
+function aktifEt(index){
+
+
+if(data.aktif!=null){
+
+alert("Zaten aktif bir iş var");
+
+return;
+
+}
+
+
+let kisi=
+prompt("Aktif eden kişi adı");
+
+
+if(!kisi){
+
+alert("İsim girmeden aktif edilemez");
+
+return;
+
+}
 
 
 
-let yeni={
+let is=data.bekleyen[index];
 
 
-no:document.getElementById("takimNo").value,
+data.bekleyen.splice(index,1);
 
 
-kod:document.getElementById("takimKod").value,
+data.aktif={
 
+no:is.no,
 
-adi:document.getElementById("takimAdi").value,
+aktifZaman:zaman(),
 
-
-omur:Number(document.getElementById("omur").value),
-
-
-kullanim:Number(document.getElementById("kullanim").value),
-
-
-durum:document.getElementById("takimDurum").value
-
-
+aktifEden:kisi
 
 };
 
 
 
-takimlar.push(yeni);
+kaydet();
 
-
-
-localStorage.setItem(
-
-"takimlar",
-
-JSON.stringify(takimlar)
-
-);
-
-
-
-takimGoster();
-
+listele();
 
 
 }
@@ -543,23 +278,39 @@ takimGoster();
 
 
 
-function takimSil(i){
+
+function tamamla(){
 
 
-takimlar.splice(i,1);
+let kisi=
+prompt("Tamamlayan kişi adı");
 
 
-localStorage.setItem(
-
-"takimlar",
-
-JSON.stringify(takimlar)
-
-);
+if(!kisi)
+{
+alert("İsim girmeden tamamlanamaz");
+return;
+}
 
 
 
-takimGoster();
+data.aktif.tamamZaman=zaman();
+
+data.aktif.tamamlayan=kisi;
+
+
+data.tamamlanan.push(data.aktif);
+
+
+data.aktif=null;
+
+
+data.counter++;
+
+
+kaydet();
+
+listele();
 
 
 }
@@ -567,11 +318,249 @@ takimGoster();
 
 
 
-// Sayfa açılışında yükle
 
-isGoster();
 
-takimGoster();
+
+function tekrarAktif(index){
+
+
+if(data.aktif!=null){
+
+alert("Başka aktif iş var");
+
+return;
+
+}
+
+
+
+let is=data.tamamlanan[index];
+
+
+data.tamamlanan.splice(index,1);
+
+
+is.aktifZaman=zaman();
+
+is.aktifEden="Tekrar aktif edildi";
+
+
+data.aktif=is;
+
+
+kaydet();
+
+listele();
+
+
+}
+
+
+
+
+
+
+
+function sureHesapla(a,b){
+
+
+let fark =
+new Date(b)-new Date(a);
+
+
+let saat =
+Math.floor(fark/3600000);
+
+
+let dakika =
+Math.floor((fark%3600000)/60000);
+
+
+return saat+" saat "+dakika+" dakika";
+
+
+}
+
+
+
+
+
+
+
+function listele(){
+
+
+
+document.getElementById("counter").innerHTML=
+data.counter;
+
+
+
+let b="";
+
+
+data.bekleyen.forEach((x,i)=>{
+
+
+b+=`
+
+<div class="is">
+
+<b>${x.no}</b>
+
+<br>
+
+<button onclick="aktifEt(${i})">
+
+İşi Aktif Et
+
+</button>
+
+
+</div>
+
+
+`;
+
+
+});
+
+
+document.getElementById("bekleyen").innerHTML=b;
+
+
+
+
+
+
+
+
+let a="";
+
+
+if(data.aktif){
+
+
+a=`
+
+<div class="is aktif">
+
+
+<h3>${data.aktif.no}</h3>
+
+
+Aktif zamanı:
+${data.aktif.aktifZaman}
+
+<br>
+
+Aktif eden:
+${data.aktif.aktifEden}
+
+
+<br><br>
+
+
+<button onclick="tamamla()">
+
+Tamamla
+
+</button>
+
+
+</div>
+
+
+`;
+
+}
+
+
+else{
+
+a="Aktif iş yok";
+
+}
+
+
+document.getElementById("aktif").innerHTML=a;
+
+
+
+
+
+
+
+let t="";
+
+
+data.tamamlanan.forEach((x,i)=>{
+
+
+t+=`
+
+<div class="is tamam">
+
+
+<b>${x.no}</b>
+
+<br>
+
+Aktif:
+${x.aktifZaman}
+
+<br>
+
+Tamam:
+${x.tamamZaman}
+
+<br>
+
+Aktif eden:
+${x.aktifEden}
+
+<br>
+
+Tamamlayan:
+${x.tamamlayan}
+
+<br>
+
+Süre:
+${sureHesapla(x.aktifZaman,x.tamamZaman)}
+
+
+<br><br>
+
+
+<button onclick="tekrarAktif(${i})">
+
+Tekrar Aktif Yap
+
+</button>
+
+
+
+</div>
+
+
+`;
+
+
+
+});
+
+
+document.getElementById("tamamlanan").innerHTML=t;
+
+
+
+}
+
+
+
+listele();
+
 
 
 </script>
