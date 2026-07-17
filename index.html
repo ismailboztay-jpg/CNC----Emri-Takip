@@ -33,6 +33,7 @@ label{display:block;font-weight:700;margin-top:12px;}
   <div class="panel">
     <h2>Üretim Durumu</h2>
     <div>Toplam Tamamlanan Parça: <strong id="counter">0</strong></div>
+    <div>Parça Döngüsü: <strong id="partLabel">1. parça - Tüm takımlar yeni</strong></div>
   </div>
   <div class="grid">
     <div class="panel">
@@ -73,25 +74,39 @@ const STORAGE_KEY = 'cncIsEmriData';
 const takimListesi = [
   'T01_AT0806_NC_PUNTA','T02_DR0420_9.7MM','T03_AT867_10MM','T04_ME0252_12MM_EM','T05_DR0504_10.5MM_MATKAP','T06_AT0662_0.458_EM_RM','T07_AT0663_.468_EM_RM','T08_ME0173_16MM_RGH','T09_ME0067_12MM_EM_RGH','T10_ME0067_12MM_EM_FIN','T11_AT0688_10MM_ENDMILL','T12_ME0250_8MM_EM','T13_MR0224_10MM_EM','T14_MB0106_8MM_CON_BN','T15_MR0225_12MM_EM','T16_MB0108_P6D_4TA','T17_AT0702_10MM_5FLT','T19_MB0107_10MM_3TA_CON_BN','T20_AT0747_10MM_5FLT','T21_AT0801_16MM_FIN','T22_AT0801_16MM_RGH','T23_MR0357_20MM_5F','T24_PME0003_10MM_EM','T25_AT0748_NEW_SC_FIN','T26_AT0748_NEW_SC_RGH'
 ];
-const birParcaDegisecek = [
-  'T08_ME0173_16MM_RGH','T15_MR0225_12MM_EM','T04_ME0252_12MM_EM','T09_ME0067_12MM_EM_RGH','T23_MR0357_20MM_5F','T22_AT0801_16MM_RGH','T21_AT0801_16MM_FIN','T24_PME0003_10MM_EM','T19_MB0107_10MM_3TA_CON_BN','T20_AT0747_10MM_5FLT','T26_AT0748_NEW_SC_RGH','T25_AT0748_NEW_SC_FIN','T12_ME0250_8MM_EM','T13_MR0224_10MM_EM','T10_ME0067_12MM_EM_FIN'
-];
 const ucParcaDegisecek = [
   'T01_AT0806_NC_PUNTA','T02_DR0420_9.7MM','T03_AT867_10MM','T05_DR0504_10.5MM_MATKAP','T06_AT0662_0.458_EM_RM','T07_AT0663_.468_EM_RM','T11_AT0688_10MM_ENDMILL','T14_MB0106_8MM_CON_BN','T16_MB0108_P6D_4TA','T17_AT0702_10MM_5FLT'
 ];
 let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {bekleyen:[],aktif:null,tamamlanan:[],counter:0};
 function kaydet(){localStorage.setItem(STORAGE_KEY, JSON.stringify(data));}
 function zaman(){return new Date().toLocaleString('tr-TR');}
-function yeniTakimDurumu(){const liste={};takimListesi.forEach(t=>{liste[t]={durum:'ESKİ',degistiren:'',tarih:''};});return liste;}
-function yeniIs(){const no=document.getElementById('isNo').value.trim();if(!no){alert('İş emri no giriniz');return;}data.bekleyen.push({no,olusturma:zaman(),takimlar:yeniTakimDurumu(),aktifZaman:'',aktifEden:'',tamamZaman:'',tamamlayan:''});document.getElementById('isNo').value='';kaydet();listele();}
-function aktifEt(index){if(data.aktif){alert('Zaten aktif iş var');return;}const isim=document.getElementById('aktifEdenInput').value.trim();if(!isim){alert('Aktif eden kişi giriniz');return;}const is=data.bekleyen.splice(index,1)[0];is.aktifZaman=zaman();is.aktifEden=isim;is.tamamZaman='';is.tamamlayan='';data.aktif=is;document.getElementById('aktifEdenInput').value='';kaydet();listele();}
+function parcaSiklus(parcaNo){return ((parcaNo-1)%4)+1;}
+function parcaAciklama(parcaNo){const phase=parcaSiklus(parcaNo);
+  if(phase===1) return '1. parça - Tüm takımlar yeni';
+  if(phase===2) return '2. parça - 1 parçalık takımlar eski, 3 parçalık takımlar yeni';
+  if(phase===3) return '3. parça - 1 parçalık takımlar eski, 3 parçalık takımlar yeni';
+  return '4. parça - Tüm takımlar eski';
+}
+function isNewByCycle(t, parcaNo){const phase=parcaSiklus(parcaNo);
+  if(phase===1) return true;
+  if(phase===4) return false;
+  return ucParcaDegisecek.includes(t);
+}
+function yeniTakimDurumu(parcaNo){const liste={};takimListesi.forEach(t=>{const durum=isNewByCycle(t,parcaNo)?'YENİ':'ESKİ';liste[t]={durum,degistiren:'',tarih:''};});return liste;}
+function yeniIs(){const no=document.getElementById('isNo').value.trim();if(!no){alert('İş emri no giriniz');return;}data.bekleyen.push({no,olusturma:zaman(),takimlar:yeniTakimDurumu(data.counter+1),aktifZaman:'',aktifEden:'',tamamZaman:'',tamamlayan:''});document.getElementById('isNo').value='';kaydet();listele();}
+function aktifEt(index){if(data.aktif){alert('Zaten aktif iş var');return;}const isim=document.getElementById('aktifEdenInput').value.trim();if(!isim){alert('Aktif eden kişi giriniz');return;}const is=data.bekleyen.splice(index,1)[0];is.takimlar=yeniTakimDurumu(data.counter+1);is.aktifZaman=zaman();is.aktifEden=isim;is.tamamZaman='';is.tamamlayan='';data.aktif=is;document.getElementById('aktifEdenInput').value='';kaydet();listele();}
 function tamamla(){if(!data.aktif){return;}const isim=document.getElementById('tamamlayanInput').value.trim();if(!isim){alert('Tamamlayan kişi giriniz');return;}data.aktif.tamamZaman=zaman();data.aktif.tamamlayan=isim;data.tamamlanan.push(data.aktif);data.aktif=null;data.counter++;document.getElementById('tamamlayanInput').value='';kaydet();listele();}
-function tekrarAktif(index){if(data.aktif){alert('Önce aktif işi tamamlayın');return;}const isim=document.getElementById('aktifEdenInput').value.trim();if(!isim){alert('Aktif eden kişi giriniz');return;}const is=data.tamamlanan.splice(index,1)[0];is.aktifZaman=zaman();is.aktifEden=isim;is.tamamZaman='';is.tamamlayan='';data.aktif=is;document.getElementById('aktifEdenInput').value='';kaydet();listele();}
+function tekrarAktif(index){if(data.aktif){alert('Önce aktif işi tamamlayın');return;}const isim=document.getElementById('aktifEdenInput').value.trim();if(!isim){alert('Aktif eden kişi giriniz');return;}const is=data.tamamlanan.splice(index,1)[0];is.takimlar=yeniTakimDurumu(data.counter+1);is.aktifZaman=zaman();is.aktifEden=isim;is.tamamZaman='';is.tamamlayan='';data.aktif=is;document.getElementById('aktifEdenInput').value='';kaydet();listele();}
 function takimDegistir(t){if(!data.aktif){return;}const takim=data.aktif.takimlar[t];if(takim.durum==='ESKİ'){takim.durum='YENİ';takim.degistiren=data.aktif.aktifEden||'Operatör';takim.tarih=zaman();}else{takim.durum='ESKİ';takim.degistiren='';takim.tarih='';}kaydet();listele();}
 function sureHesapla(a,b){const diff=new Date(b)-new Date(a);if(isNaN(diff))return'';const saat=Math.floor(diff/3600000);const dakika=Math.floor((diff%3600000)/60000);return`${saat} saat ${dakika} dakika`;}
-function tumTakimlarDegisecek(parcaNo){return parcaNo>0 && parcaNo%3===0;}
-function degisecekMi(t){const parcaNo=data.counter+1;return tumTakimlarDegisecek(parcaNo) ? true : birParcaDegisecek.includes(t);}
-function listele(){document.getElementById('counter').textContent=data.counter;const bekleyen=document.getElementById('bekleyen');if(data.bekleyen.length===0){bekleyen.innerHTML='<div>Bekleyen iş yok</div>';}else{bekleyen.innerHTML=data.bekleyen.map((x,i)=>`<div class="is"><b>${x.no}</b><br>Oluşturma: ${x.olusturma}<br><button onclick="aktifEt(${i})" ${data.aktif?'disabled':''}>İşi Aktif Et</button></div>`).join('');}const aktif=document.getElementById('aktif');if(data.aktif){aktif.innerHTML=`<div class="is aktif"><h3>${data.aktif.no}</h3>Aktif Eden: ${data.aktif.aktifEden}<br>Aktif Zaman: ${data.aktif.aktifZaman}<br><br><button onclick="tamamla()">Tamamla</button></div>`;}else{aktif.innerHTML='Aktif iş yok';}const takimlar=document.getElementById('takimlar');if(data.aktif){takimlar.innerHTML=takimListesi.map(t=>{const info=data.aktif.takimlar[t];const renk=info.durum==='YENİ'?'yeni':'eski';const label=degisecekMi(t)?'<div class="change-label">Değiştirilecek</div>':'';return`<div class="is ${renk}"><b>${t}</b><br>Durum: ${info.durum}<br>${label}${info.degistiren?`Değiştiren: ${info.degistiren}<br>`:''}${info.tarih?`Tarih: ${info.tarih}<br>`:''}<button class="status-button ${info.durum==='YENİ'?'yeni':'eski'}" onclick="takimDegistir('${t}')">${info.durum==='ESKİ'?'Yeni Yap':'Eski Yap'}</button></div>`;}).join('');}else{takimlar.innerHTML='Aktif iş yok';}const tamamlanan=document.getElementById('tamamlanan');if(data.tamamlanan.length===0){tamamlanan.innerHTML='<div>Tamamlanan iş yok</div>';}else{tamamlanan.innerHTML=data.tamamlanan.map((x,i)=>`<div class="is tamam"><b>${x.no}</b><br>Aktif Eden: ${x.aktifEden}<br>Aktif Zaman: ${x.aktifZaman}<br>Tamamlayan: ${x.tamamlayan}<br>Tamam Zaman: ${x.tamamZaman}<br>Toplam Süre: ${sureHesapla(x.aktifZaman,x.tamamZaman)}<br><br><button onclick="tekrarAktif(${i})">Tekrar Aktif Yap</button></div>`).join('');}}window.addEventListener('storage',()=>{const saved=JSON.parse(localStorage.getItem(STORAGE_KEY));if(saved)data=saved;listele();});listele();
+function degisecekMi(t){const parcaNo=data.counter+1;return isNewByCycle(t, parcaNo);}
+function listele(){const parcaNo=data.counter+1;document.getElementById('counter').textContent=data.counter;document.getElementById('partLabel').textContent=parcaAciklama(parcaNo);
+  const bekleyen=document.getElementById('bekleyen');if(data.bekleyen.length===0){bekleyen.innerHTML='<div>Bekleyen iş yok</div>';}else{bekleyen.innerHTML=data.bekleyen.map((x,i)=>`<div class="is"><b>${x.no}</b><br>Oluşturma: ${x.olusturma}<br><button onclick="aktifEt(${i})" ${data.aktif?'disabled':''}>İşi Aktif Et</button></div>`).join('');}
+  const aktif=document.getElementById('aktif');if(data.aktif){aktif.innerHTML=`<div class="is aktif"><h3>${data.aktif.no}</h3>Aktif Eden: ${data.aktif.aktifEden}<br>Aktif Zaman: ${data.aktif.aktifZaman}<br><br><button onclick="tamamla()">Tamamla</button></div>`;}else{aktif.innerHTML='Aktif iş yok';}
+  const takimlar=document.getElementById('takimlar');if(data.aktif){takimlar.innerHTML=takimListesi.map(t=>{const info=data.aktif.takimlar[t];const renk=info.durum==='YENİ'?'yeni':'eski';const label=isNewByCycle(t, parcaNo)?'<div class="change-label">Bu parçada yeni</div>':'<div class="change-label">Bu parçada eski</div>';
+      return`<div class="is ${renk}"><b>${t}</b><br>Durum: ${info.durum}<br>${label}${info.degistiren?`Değiştiren: ${info.degistiren}<br>`:''}${info.tarih?`Tarih: ${info.tarih}<br>`:''}<button class="status-button ${info.durum==='YENİ'?'yeni':'eski'}" onclick="takimDegistir('${t}')">${info.durum==='ESKİ'?'Yeni Yap':'Eski Yap'}</button></div>`;}).join('');}else{takimlar.innerHTML='Aktif iş yok';}
+  const tamamlanan=document.getElementById('tamamlanan');if(data.tamamlanan.length===0){tamamlanan.innerHTML='<div>Tamamlanan iş yok</div>';}else{tamamlanan.innerHTML=data.tamamlanan.map((x,i)=>`<div class="is tamam"><b>${x.no}</b><br>Aktif Eden: ${x.aktifEden}<br>Aktif Zaman: ${x.aktifZaman}<br>Tamamlayan: ${x.tamamlayan}<br>Tamam Zaman: ${x.tamamZaman}<br>Toplam Süre: ${sureHesapla(x.aktifZaman,x.tamamZaman)}<br><br><button onclick="tekrarAktif(${i})">Tekrar Aktif Yap</button></div>`).join('');}}
+window.addEventListener('storage',()=>{const saved=JSON.parse(localStorage.getItem(STORAGE_KEY));if(saved)data=saved;listele();});listele();
 </script>
 </body>
 </html>
