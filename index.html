@@ -86,7 +86,10 @@ function loadData(){const value=localStorage.getItem(STORAGE_KEY);if(value){try{
   if(typeof data.counter!=='number') data.counter=0;
   if(data.counter < data.tamamlanan.length) data.counter = data.tamamlanan.length;
 }
-function kaydet(){localStorage.setItem(STORAGE_KEY, JSON.stringify(data));}
+function kaydet(){
+  data._updatedAt = Date.now();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
 function zaman(){return new Date().toLocaleString('tr-TR');}
 function parcaSiklus(parcaNo){return ((parcaNo-1)%4)+1;}
 function parcaAciklama(parcaNo){const phase=parcaSiklus(parcaNo);
@@ -116,6 +119,37 @@ function listele(){const parcaNo=data.counter+1;document.getElementById('counter
   const tamamlanan=document.getElementById('tamamlanan');if(data.tamamlanan.length===0){tamamlanan.innerHTML='<div>Tamamlanan iş yok</div>';}else{tamamlanan.innerHTML=data.tamamlanan.map((x,i)=>`<div class="is tamam"><b>${x.no}</b><br>Aktif Eden: ${x.aktifEden}<br>Aktif Zaman: ${x.aktifZaman}<br>Tamamlayan: ${x.tamamlayan}<br>Tamam Zaman: ${x.tamamZaman}<br>Toplam Süre: ${sureHesapla(x.aktifZaman,x.tamamZaman)}<br><br><button onclick="tekrarAktif(${i})">Tekrar Aktif Yap</button></div>`).join('');}}
 window.addEventListener('storage',()=>{loadData();listele();});
 loadData();listele();
+
+// --- Real-time sync via Socket.IO ---
+; (function(){
+  function loadScript(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.head.appendChild(s);});}
+  loadScript('/socket.io/socket.io.js').then(()=>{
+    const CLIENT_ID = Math.random().toString(36).slice(2);
+    const socket = io();
+
+    socket.on('connect', ()=>{console.log('socket connected');});
+
+    socket.on('data', srv => {
+      if(!srv) return;
+      const serverUpdated = srv._updatedAt || 0;
+      const localUpdated = data._updatedAt || 0;
+      if(serverUpdated > localUpdated && srv._clientId !== CLIENT_ID){
+        data = srv; kaydet(); listele();
+      }
+    });
+
+    // override kaydet to also push to server
+    const originalKaydet = kaydet;
+    kaydet = function(){
+      data._clientId = CLIENT_ID;
+      originalKaydet();
+      try{ socket.emit('push', data); }catch(e){}
+    }
+
+    // request immediate sync
+    try{ socket.emit('get'); }catch(e){}
+  }).catch(()=>{console.warn('Socket.IO client failed to load, falling back to periodic sync');});
+})();
 </script>
 </body>
 </html>
