@@ -126,6 +126,7 @@ loadData();listele();
   loadScript('/socket.io/socket.io.js').then(()=>{
     const CLIENT_ID = Math.random().toString(36).slice(2);
     const socket = io();
+    window.__cncSocket = socket;
 
     socket.on('connect', ()=>{console.log('socket connected');});
 
@@ -150,6 +151,23 @@ loadData();listele();
     try{ socket.emit('get'); }catch(e){}
   }).catch(()=>{console.warn('Socket.IO client failed to load, falling back to periodic sync');});
 })();
+
+// Ensure on focus / refresh we request latest from server when available
+window.addEventListener('focus', async () => {
+  try{
+    if(window.__cncSocket){
+      try{ window.__cncSocket.emit('get'); }catch(e){}
+      return;
+    }
+    // fallback: HTTP fetch
+    const res = await fetch('/api/data');
+    if(!res.ok) return;
+    const srv = await res.json();
+    const serverUpdated = srv._updatedAt || 0;
+    const localUpdated = data._updatedAt || 0;
+    if(serverUpdated > localUpdated){ data = srv; kaydet(); listele(); }
+  }catch(e){/* ignore */}
+});
 </script>
 </body>
 </html>
