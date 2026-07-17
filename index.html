@@ -84,6 +84,7 @@ function loadData(){const value=localStorage.getItem(STORAGE_KEY);if(value){try{
   if(!Array.isArray(data.tamamlanan)) data.tamamlanan=[];
   if(!('aktif' in data)) data.aktif=null;
   if(typeof data.counter!=='number') data.counter=0;
+  if(data.counter < data.tamamlanan.length) data.counter = data.tamamlanan.length;
 }
 function kaydet(){localStorage.setItem(STORAGE_KEY, JSON.stringify(data));}
 function zaman(){return new Date().toLocaleString('tr-TR');}
