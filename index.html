@@ -2,9 +2,253 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>CNC İş Emri Takip</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background:#f2f2f2;
+    margin:20px;
+}
+
+h1 {
+    background:#1f4e79;
+    color:white;
+    padding:15px;
+    text-align:center;
+}
+
+.panel {
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    margin-bottom:20px;
+}
+
+input, select, button {
+    padding:10px;
+    margin:5px;
+    font-size:15px;
+}
+
+input, select {
+    width:180px;
+}
+
+button {
+    background:#1f4e79;
+    color:white;
+    border:none;
+    cursor:pointer;
+    border-radius:5px;
+}
+
+button:hover {
+    background:#163a5c;
+}
+
+table {
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+}
+
+th {
+    background:#1f4e79;
+    color:white;
+}
+
+td, th {
+    border:1px solid #ccc;
+    padding:8px;
+    text-align:center;
+}
+
+.sil {
+    background:#c00000;
+}
+
+</style>
+
 </head>
+
+
 <body>
-<h1>Program Çalışıyor</h1>
+
+<h1>CNC İş Emri Takip Sistemi</h1>
+
+
+<div class="panel">
+
+<h2>Yeni İş Emri</h2>
+
+<input id="isno" placeholder="İş No">
+
+<input id="parca" placeholder="Parça Adı">
+
+<input id="musteri" placeholder="Müşteri">
+
+<select id="tezgah">
+<option>Makine Seç</option>
+<option>Matsuura</option>
+<option>Emco</option>
+<option>Siemens</option>
+<option>Diğer</option>
+</select>
+
+
+<select id="durum">
+
+<option>Bekliyor</option>
+<option>Devam Ediyor</option>
+<option>Tamamlandı</option>
+
+</select>
+
+
+<button onclick="ekle()">Kaydet</button>
+
+
+</div>
+
+
+
+<div class="panel">
+
+<h2>İş Emirleri</h2>
+
+
+<table>
+
+<thead>
+
+<tr>
+<th>İş No</th>
+<th>Parça</th>
+<th>Müşteri</th>
+<th>Tezgah</th>
+<th>Durum</th>
+<th>Sil</th>
+</tr>
+
+</thead>
+
+
+<tbody id="liste">
+
+</tbody>
+
+
+</table>
+
+
+</div>
+
+
+
+<script>
+
+
+let isler = JSON.parse(localStorage.getItem("isler")) || [];
+
+
+function goster(){
+
+let tablo=document.getElementById("liste");
+
+tablo.innerHTML="";
+
+
+isler.forEach((x,index)=>{
+
+
+let satir=`
+
+<tr>
+
+<td>${x.no}</td>
+
+<td>${x.parca}</td>
+
+<td>${x.musteri}</td>
+
+<td>${x.tezgah}</td>
+
+<td>${x.durum}</td>
+
+<td>
+<button class="sil" onclick="sil(${index})">
+Sil
+</button>
+</td>
+
+</tr>
+
+`;
+
+
+tablo.innerHTML+=satir;
+
+
+});
+
+
+}
+
+
+
+function ekle(){
+
+
+let yeni={
+
+no:document.getElementById("isno").value,
+
+parca:document.getElementById("parca").value,
+
+musteri:document.getElementById("musteri").value,
+
+tezgah:document.getElementById("tezgah").value,
+
+durum:document.getElementById("durum").value
+
+};
+
+
+isler.push(yeni);
+
+
+localStorage.setItem("isler",JSON.stringify(isler));
+
+
+goster();
+
+
+document.querySelectorAll("input").forEach(x=>x.value="");
+
+
+}
+
+
+
+function sil(i){
+
+isler.splice(i,1);
+
+localStorage.setItem("isler",JSON.stringify(isler));
+
+goster();
+
+}
+
+
+goster();
+
+
+</script>
+
+
 </body>
 </html>
