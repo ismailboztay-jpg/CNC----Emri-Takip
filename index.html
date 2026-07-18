@@ -174,12 +174,9 @@ function listele(){const parcaNo=data.counter+1;document.getElementById('counter
 window.addEventListener('storage',()=>{loadData();listele();});
 loadData();listele();
 
-// persist a one-time 'program finished' timestamp so it stays visible until removed
+// show a static control label for loading verification
 try{
-  const key = 'programFinishedAt';
-  if(!localStorage.getItem(key)) localStorage.setItem(key, new Date().toLocaleString('tr-TR'));
-  const stamp = localStorage.getItem(key) || '—';
-  const el = document.getElementById('assistantFinishStamp'); if(el) el.textContent = `Yazma Bitti: ${stamp}`;
+  const el = document.getElementById('assistantFinishStamp'); if(el) el.textContent = 'şimdi ismail';
 }catch(e){}
 
 function temizleConfirm(){
