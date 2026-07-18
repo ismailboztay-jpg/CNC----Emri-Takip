@@ -82,7 +82,8 @@ const takimListesi = [
 const ucParcaDegisecek = [
   'T01_AT0806_NC_PUNTA','T02_DR0420_9.7MM','T03_AT867_10MM','T05_DR0504_10.5MM_MATKAP','T06_AT0662_0.458_EM_RM','T07_AT0663_.468_EM_RM','T11_AT0688_10MM_ENDMILL','T14_MB0106_8MM_CON_BN','T16_MB0108_P6D_4TA','T17_AT0702_10MM_5FLT'
 ];
-function defaultData(){return {bekleyen:[],aktif:null,tamamlanan:[],counter:3,_updatedAt:0};}
+function defaultMachineState(){const liste={};takimListesi.forEach(t=>{liste[t]={durum:'ESKİ',degistiren:'',tarih:'',untilCounter:0};});return liste;}
+function defaultData(){return {bekleyen:[],aktif:null,tamamlanan:[],counter:0,machineState:defaultMachineState(),_updatedAt:0};}
 let data = defaultData();
 function loadData(){const value=localStorage.getItem(STORAGE_KEY);if(value){try{const parsed=JSON.parse(value);if(parsed&&typeof parsed==='object'){data=parsed;}else{data=defaultData();}}catch(e){data=defaultData();}}else{data=defaultData();}
   if(!Array.isArray(data.bekleyen)) data.bekleyen=[];
@@ -90,6 +91,8 @@ function loadData(){const value=localStorage.getItem(STORAGE_KEY);if(value){try{
   if(!('aktif' in data)) data.aktif=null;
   if(typeof data.counter!=='number') data.counter=0;
   if(data.counter < data.tamamlanan.length) data.counter = data.tamamlanan.length;
+  if(!data.machineState || typeof data.machineState !== 'object') data.machineState = defaultMachineState();
+  takimListesi.forEach(t=>{if(!data.machineState[t]) data.machineState[t]={durum:'ESKİ',degistiren:'',tarih:'',untilCounter:0};});
 }
 function kaydet(){
   data._updatedAt = Date.now();
@@ -99,9 +102,9 @@ function kaydet(){
 function zaman(){return new Date().toLocaleString('tr-TR');}
 function parcaSiklus(parcaNo){return ((parcaNo-1)%4)+1;}
 function parcaAciklama(parcaNo){const phase=parcaSiklus(parcaNo);
-  if(phase===1) return '1. parça - Tüm takımlar yeni';
+  if(phase===1) return '1. parça - Tüm takımlar eski';
   if(phase===2) return '2. parça - 1 parçalık takımlar eski, 3 parçalık takımlar yeni';
-  if(phase===3) return '3. parça - 1 parçalık takımlar eski, 3 parçalık takımlar yeni';
+  if(phase===3) return '3. parça - 1 parçalık takımlar değişmeli, 3 parçalık takımlar yeni';
   return '4. parça - Tüm takımlar eski';
 }
 function isNewByCycle(t, parcaNo){const phase=parcaSiklus(parcaNo);
@@ -109,29 +112,41 @@ function isNewByCycle(t, parcaNo){const phase=parcaSiklus(parcaNo);
   if(phase===4) return false;
   return ucParcaDegisecek.includes(t);
 }
-function yeniTakimDurumu(parcaNo){const liste={};takimListesi.forEach(t=>{liste[t]={durum:'ESKİ',degistiren:'',tarih:'',untilCounter:0};});return liste;}
+function resetMachineStateForPart4(){takimListesi.forEach(t=>{const s=data.machineState[t];if(s){s.durum='ESKİ';s.degistiren='';s.tarih='';s.untilCounter=0;}});}
+function yeniTakimDurumu(parcaNo){const liste={};takimListesi.forEach(t=>{const base=data.machineState[t]||{durum:'ESKİ',degistiren:'',tarih:'',untilCounter:0};const isYeni = parcaNo===4?false:(typeof base.untilCounter==='number' && base.untilCounter > data.counter);liste[t]={durum:isYeni?'YENİ':'ESKİ',degistiren:isYeni?base.degistiren:'',tarih:isYeni?base.tarih:'',untilCounter:isYeni?base.untilCounter:0};});return liste;}
 function yeniIs(){const no=document.getElementById('isNo').value.trim();if(!no){alert('İş emri no giriniz');return;}data.bekleyen.push({no,olusturma:zaman(),takimlar:yeniTakimDurumu(data.counter+1),aktifZaman:'',aktifEden:'',tamamZaman:'',tamamlayan:''});document.getElementById('isNo').value='';kaydet();listele();}
-function aktifEt(index){if(data.aktif){alert('Zaten aktif iş var');return;}const isim=document.getElementById('aktifEdenInput').value.trim();if(!isim){alert('Aktif eden kişi giriniz');return;}const is=data.bekleyen.splice(index,1)[0];is.takimlar=yeniTakimDurumu(data.counter+1);is.aktifZaman=zaman();is.aktifEden=isim;is.tamamZaman='';is.tamamlayan='';data.aktif=is;document.getElementById('aktifEdenInput').value='';kaydet();listele();}
+function aktifEt(index){if(data.aktif){alert('Zaten aktif iş var');return;}const isim=document.getElementById('aktifEdenInput').value.trim();if(!isim){alert('Aktif eden kişi giriniz');return;}const is=data.bekleyen.splice(index,1)[0];const partNo=data.counter+1;if(partNo===4){resetMachineStateForPart4();}is.takimlar=yeniTakimDurumu(partNo);is.aktifZaman=zaman();is.aktifEden=isim;is.tamamZaman='';is.tamamlayan='';data.aktif=is;document.getElementById('aktifEdenInput').value='';kaydet();listele();}
 function tamamla(){if(!data.aktif){return;}const isim=document.getElementById('tamamlayanInput').value.trim();if(!isim){alert('Tamamlayan kişi giriniz');return;}data.aktif.tamamZaman=zaman();data.aktif.tamamlayan=isim;data.tamamlanan.push(data.aktif);data.aktif=null;data.counter++;document.getElementById('tamamlayanInput').value='';kaydet();listele();}
-function tekrarAktif(index){if(data.aktif){alert('Önce aktif işi tamamlayın');return;}const isim=document.getElementById('aktifEdenInput').value.trim();if(!isim){alert('Aktif eden kişi giriniz');return;}const is=data.tamamlanan.splice(index,1)[0];is.takimlar=yeniTakimDurumu(data.counter+1);is.aktifZaman=zaman();is.aktifEden=isim;is.tamamZaman='';is.tamamlayan='';data.aktif=is;document.getElementById('aktifEdenInput').value='';kaydet();listele();}
+function tekrarAktif(index){if(data.aktif){alert('Önce aktif işi tamamlayın');return;}const isim=document.getElementById('aktifEdenInput').value.trim();if(!isim){alert('Aktif eden kişi giriniz');return;}const is=data.tamamlanan.splice(index,1)[0];const partNo=data.counter+1;if(partNo===4){resetMachineStateForPart4();}is.takimlar=yeniTakimDurumu(partNo);is.aktifZaman=zaman();is.aktifEden=isim;is.tamamZaman='';is.tamamlayan='';data.aktif=is;document.getElementById('aktifEdenInput').value='';kaydet();listele();}
 function takimDegistir(t){
   if(!data.aktif) return;
   const takim = data.aktif.takimlar[t];
   const isUc = ucParcaDegisecek.includes(t);
   const nowCount = data.counter;
-  // determine if currently active (still within untilCounter)
-  const active = typeof takim.untilCounter==='number' && takim.untilCounter > nowCount;
-  if(active){
-    // turn back to ESki (clear untilCounter)
+  const currentlyYeni = takim.durum === 'YENİ';
+  if(currentlyYeni){
+    takim.durum = 'ESKİ';
     takim.untilCounter = 0;
     takim.degistiren = '';
     takim.tarih = '';
+    if(data.machineState[t]){
+      data.machineState[t].durum='ESKİ';
+      data.machineState[t].untilCounter=0;
+      data.machineState[t].degistiren='';
+      data.machineState[t].tarih='';
+    }
   } else {
-    // set as YENİ for next N parts
     const span = isUc ? 3 : 1;
+    takim.durum = 'YENİ';
     takim.untilCounter = nowCount + span;
     takim.degistiren = data.aktif.aktifEden || 'Operatör';
     takim.tarih = zaman();
+    if(data.machineState[t]){
+      data.machineState[t].durum='YENİ';
+      data.machineState[t].untilCounter=takim.untilCounter;
+      data.machineState[t].degistiren=takim.degistiren;
+      data.machineState[t].tarih=takim.tarih;
+    }
   }
   kaydet(); listele();
 }
@@ -146,7 +161,7 @@ function listele(){const parcaNo=data.counter+1;document.getElementById('counter
   if(data.aktif){
     takimlar.innerHTML = takimListesi.map(t => {
       const info = data.aktif.takimlar[t] || {};
-      const isYeni = typeof info.untilCounter === 'number' && info.untilCounter > data.counter;
+      const isYeni = info.durum === 'YENİ';
       const renk = isYeni ? 'yeni' : 'eski';
       let label = isYeni ? '<div class="change-label">Bu parçada yeni</div>' : '<div class="change-label">Bu parçada eski</div>';
       if(isYeni && ucParcaDegisecek.includes(t)){
