@@ -7,7 +7,7 @@ const app = express();
 const DATA_FILE = path.join(__dirname, 'data.json');
 const PORT = process.env.PORT || 3000;
 
-app.use(require('cors')());
+app.use(require('cors')({ origin: true, credentials: true }));
 app.use(express.json());
 
 const AUTH_USER = process.env.BASIC_AUTH_USER || 'admin';
@@ -79,7 +79,7 @@ app.post('/api/data', (req, res) => {
 app.use(express.static(path.join(__dirname)));
 
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*' } });
+const io = new Server(server, { cors: { origin: true, credentials: true } });
 
 io.on('connection', (socket) => {
   // send current store

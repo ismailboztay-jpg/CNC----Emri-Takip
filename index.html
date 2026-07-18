@@ -131,7 +131,7 @@ function updateSyncStatus(text){
 }
 
 async function loadServerData(){
-  const res = await fetch(SERVER_API, {credentials:'same-origin'});
+  const res = await fetch(SERVER_API, {credentials:'include'});
   if(!res.ok) throw new Error('server error');
   return await res.json();
 }
@@ -153,7 +153,7 @@ async function initData(){
         window.__cncSocket.emit('push', data);
       } else {
         try{
-          await fetch(SERVER_API, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),credentials:'same-origin'});
+          await fetch(SERVER_API, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),credentials:'include'});
         }catch(e){}
       }
       updateSyncStatus('sunucuya gönderildi');
@@ -169,7 +169,7 @@ async function initData(){
 
 async function syncWithServer(){
   try{
-    const res = await fetch(SERVER_API, {credentials:'same-origin'});
+    const res = await fetch(SERVER_API, {credentials:'include'});
     if(!res.ok) return;
     const srv = await res.json();
     const serverUpdated = srv._updatedAt || 0;
@@ -354,7 +354,7 @@ window.addEventListener('focus', async () => {
       return;
     }
     // fallback: HTTP fetch
-    const res = await fetch(SERVER_API);
+    const res = await fetch(SERVER_API, {credentials:'include'});
     if(!res.ok) return;
     const srv = await res.json();
     const serverUpdated = srv._updatedAt || 0;
