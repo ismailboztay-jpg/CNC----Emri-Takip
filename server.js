@@ -10,6 +10,28 @@ const PORT = process.env.PORT || 3000;
 app.use(require('cors')());
 app.use(express.json());
 
+const AUTH_USER = process.env.BASIC_AUTH_USER || 'admin';
+const AUTH_PASS = process.env.BASIC_AUTH_PASS || 'cnc2026';
+function basicAuth(req, res, next){
+  const auth = req.headers.authorization;
+  if(!auth){
+    res.set('WWW-Authenticate', 'Basic realm="CNC İş Emri"');
+    return res.status(401).send('Unauthorized');
+  }
+  const [scheme, credentials] = auth.split(' ');
+  if(scheme !== 'Basic' || !credentials){
+    return res.status(400).send('Bad Request');
+  }
+  const [user, pass] = Buffer.from(credentials, 'base64').toString('utf8').split(':');
+  if(user === AUTH_USER && pass === AUTH_PASS){
+    return next();
+  }
+  res.set('WWW-Authenticate', 'Basic realm="CNC İş Emri"');
+  return res.status(401).send('Unauthorized');
+}
+
+app.use(basicAuth);
+
 function defaultData(){
   return {bekleyen:[], aktif:null, tamamlanan:[], counter:0, _updatedAt:0};
 }
