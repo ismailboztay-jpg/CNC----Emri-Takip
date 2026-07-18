@@ -45,6 +45,11 @@ button:disabled{background:#999;cursor:not-allowed;}
 input{padding:10px;width:100%;border:1px solid #ccc;border-radius:6px;margin:6px 0 12px;box-sizing:border-box;}
 label{display:block;font-weight:700;margin-top:12px;}
 .is{border:1px solid #ddd;border-radius:8px;padding:12px;margin-bottom:12px;}
+.summary-modal{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:10000;}
+.summary-content{background:#fff;border-radius:10px;padding:18px;max-width:900px;width:92%;max-height:80vh;overflow:auto;box-shadow:0 30px 60px rgba(0,0,0,0.35);}
+.summary-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.summary-row{display:flex;justify-content:space-between;padding:8px 6px;border-bottom:1px solid #eee;font-size:0.95rem;}
+.summary-row .muted{color:#666;font-size:0.9rem}
 .aktif{background:#eaf8ea;border-color:#c8e6c9;}
 .tamam{background:#f7f7f7;border-color:#d3d3d3;}
 .eski{background:#ffe5e5;border-color:#f5b7b7;}
@@ -57,6 +62,12 @@ label{display:block;font-weight:700;margin-top:12px;}
 @media(max-width:960px){.grid{grid-template-columns:1fr;}#partLabel{font-size:0.95rem;}}</style>
 </head>
 <body>
+<div id="summaryModal" class="summary-modal" style="display:none;">
+  <div class="summary-content">
+    <div class="summary-header"><h3 id="summaryTitle">İş Özeti</h3><button onclick="closeSummary()" style="margin-left:12px;">Kapat</button></div>
+    <div id="summaryBody"></div>
+  </div>
+</div>
 <div class="container">
   <h1 class="page-title">ARTUK AVIATION</h1>
   <div class="panel">
@@ -402,7 +413,7 @@ function listele(){const parcaNo=data.counter+1;document.getElementById('counter
       const aktifZaman = formatDateTime(x.aktifZaman);
       const tamamZaman = formatDateTime(x.tamamZaman);
       const toplam = sureHesapla(x.aktifZaman, x.tamamZaman);
-      return `<div class="is tamam"><b>${x.no}</b><br>Aktif Eden: ${x.aktifEden}<br>Aktif Zaman: ${aktifZaman}<br>Tamamlayan: ${x.tamamlayan}<br>Bitiş Zaman: ${tamamZaman}<br>Toplam Süre: ${toplam}<br><br><button onclick="tekrarAktif(${origIndex})">Tekrar Aktif Yap</button></div>`;
+      return `<div class="is tamam"><b>${x.no}</b><br>Aktif Eden: ${x.aktifEden}<br>Aktif Zaman: ${aktifZaman}<br>Tamamlayan: ${x.tamamlayan}<br>Bitiş Zaman: ${tamamZaman}<br>Toplam Süre: ${toplam}<br><br><button onclick="showSummary(${origIndex})">Özet</button> <button onclick="tekrarAktif(${origIndex})">Tekrar Aktif Yap</button></div>`;
     }).join('');
   }
 }
@@ -502,6 +513,30 @@ window.addEventListener('focus', async () => {
     }
   }catch(e){/* ignore */}
 });
+
+function showSummary(index){
+  const job = data.tamamlanan[index];
+  if(!job){ alert('İş bulunamadı'); return; }
+  const body = document.getElementById('summaryBody');
+  const title = document.getElementById('summaryTitle');
+  title.textContent = `İş Özeti — ${job.no}`;
+  const lines = [];
+  lines.push(`<div style="margin-bottom:8px;font-weight:700">Takımlar ve değişiklikler</div>`);
+  lines.push('<div style="max-height:60vh;overflow:auto;border-top:1px solid #eee;padding-top:8px">');
+  takimListesi.forEach(t=>{
+    const info = (job.takimlar && job.takimlar[t]) || data.machineState[t] || {durum:'ESKİ',degistiren:'',tarih:'',untilCounter:0};
+    lines.push(`<div class="summary-row"><div><b>${t}</b><div class="muted">Durum: ${info.durum || ''}${info.untilCounter?(' — Kalan: '+info.untilCounter):''}</div></div><div style="text-align:right">${info.degistiren?`Değiştiren: ${info.degistiren}<br>`:''}${info.tarih?`Tarih: ${formatDateTime(info.tarih)}`:''}</div></div>`);
+  });
+  lines.push('</div>');
+  body.innerHTML = lines.join('');
+  const modal = document.getElementById('summaryModal');
+  if(modal){ modal.style.display = 'flex'; }
+}
+
+function closeSummary(){
+  const modal = document.getElementById('summaryModal');
+  if(modal){ modal.style.display = 'none'; }
+}
 </script>
 </body>
 </html>
