@@ -15,7 +15,8 @@ const AUTH_PASS = process.env.BASIC_AUTH_PASS || 'cnc2026';
 function basicAuth(req, res, next){
   const auth = req.headers.authorization;
   if(!auth){
-    res.set('WWW-Authenticate', 'Basic realm="CNC İş Emri"');
+    // Note: header values must be ASCII. avoid non-ASCII characters in WWW-Authenticate realm.
+    res.set('WWW-Authenticate', 'Basic realm="CNC Is Emri"');
     return res.status(401).send('Unauthorized');
   }
   const [scheme, credentials] = auth.split(' ');
