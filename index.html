@@ -385,7 +385,7 @@ function listele(){const parcaNo=data.counter+1;document.getElementById('counter
         const remaining = Math.max(0, info.untilCounter - data.counter);
         label += `<div class="change-label">Kalan: ${remaining} parça</div>`;
       }
-      return `<div class="is ${renk}"><b>${t}</b><br>Durum: ${isYeni ? 'YENİ' : 'ESKİ'}<br>${label}${info.degistiren?`Değiştiren: ${info.degistiren}<br>`:''}${info.tarih?`Tarih: ${info.tarih}<br>`:''}<button class="status-button ${isYeni?'yeni':'eski'}" onclick="takimDegistir('${t}')">${isYeni?'Eski Yap':'Yeni Yap'}</button></div>`;
+      return `<div class="is ${renk}"><b>${t}</b><br>Durum: ${isYeni ? 'YENİ' : 'ESKİ'}<br>${label}${info.degistiren?`Değiştiren: ${info.degistiren}<br>`:''}${info.tarih?`Tarih: ${formatDateTime(info.tarih)}<br>`:''}<button class="status-button ${isYeni?'yeni':'eski'}" onclick="takimDegistir('${t}')">${isYeni?'Eski Yap':'Yeni Yap'}</button></div>`;
     }).join('');
   } else {takimlar.innerHTML='Aktif iş yok';}
   const tamamlanan=document.getElementById('tamamlanan');
