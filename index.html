@@ -338,7 +338,13 @@ function sureHesapla(a,b){
   if(isNaN(diff) || diff < 0) return '';
   const saat = Math.floor(diff/3600000);
   const dakika = Math.floor((diff%3600000)/60000);
-  return `${saat} saat ${dakika} dakika`;
+  const saniye = Math.floor((diff%60000)/1000);
+  // build readable string including seconds for short durations
+  const parts = [];
+  parts.push(`${saat} saat`);
+  parts.push(`${dakika} dakika`);
+  parts.push(`${saniye} saniye`);
+  return parts.join(' ');
 }
 function formatDateTime(value){
   const date = parseDate(value);
@@ -375,7 +381,10 @@ function listele(){const parcaNo=data.counter+1;document.getElementById('counter
     });
     tamamlanan.innerHTML = sorted.map((x,i)=>{
       const origIndex = data.tamamlanan.indexOf(x);
-      return `<div class="is tamam"><b>${x.no}</b><br>Aktif Eden: ${x.aktifEden}<br>Aktif Zaman: ${x.aktifZaman}<br>Tamamlayan: ${x.tamamlayan}<br>Tamam Zaman: ${x.tamamZaman}<br>Toplam Süre: ${sureHesapla(x.aktifZaman,x.tamamZaman)}<br><br><button onclick="tekrarAktif(${origIndex})">Tekrar Aktif Yap</button></div>`;
+      const aktifZaman = formatDateTime(x.aktifZaman);
+      const tamamZaman = formatDateTime(x.tamamZaman);
+      const toplam = sureHesapla(x.aktifZaman, x.tamamZaman);
+      return `<div class="is tamam"><b>${x.no}</b><br>Aktif Eden: ${x.aktifEden}<br>Aktif Zaman: ${aktifZaman}<br>Tamamlayan: ${x.tamamlayan}<br>Bitiş Zaman: ${tamamZaman}<br>Toplam Süre: ${toplam}<br><br><button onclick="tekrarAktif(${origIndex})">Tekrar Aktif Yap</button></div>`;
     }).join('');
   }
 }
