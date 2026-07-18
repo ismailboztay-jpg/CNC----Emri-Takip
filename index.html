@@ -10,16 +10,7 @@
 <style>
 body{font-family:'Inter',Arial,sans-serif;background:#f1f3f5;margin:0;padding:0;color:#2b3a4a;}
 .container{max-width:1200px;margin:20px auto;padding:20px;}
-.header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:20px;flex-wrap:nowrap;}
-.header-left{display:flex;align-items:center;gap:18px;min-width:180px;}
-.header img.logo{max-width:140px;width:100%;height:auto;display:block;}
-.header-right{flex:1 1 420px;background:#ffffff;border:1px solid rgba(27,62,106,0.08);border-radius:16px;padding:16px 18px;box-shadow:0 18px 40px rgba(43,58,74,0.08);min-width:0;}
-.header-right h2{margin:0 0 8px;color:#173759;font-size:0.98rem;letter-spacing:0.04em;text-transform:uppercase;font-weight:700;}
-.header-right p{margin:0;color:#425066;line-height:1.5;font-size:0.92rem;}
-.header-right .contact-line{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;}
-.header-right .contact-line:last-child{margin-bottom:0;}
-.header-right .contact-line span{font-size:0.98rem;line-height:1.4;}
-.header-right .contact-text strong{display:block;font-size:0.86rem;color:#1f3b64;margin-bottom:2px;font-weight:600;}
+.page-title{margin:0 0 20px;font-size:2.8rem;color:#173759;text-align:center;letter-spacing:0.12em;text-transform:uppercase;}
 .panel{background:white;border-radius:10px;padding:18px;margin-bottom:20px;box-shadow:0 10px 24px rgba(0,0,0,0.06);}
 @media(max-width:720px){
   .header{flex-wrap:nowrap;gap:12px;}
@@ -52,21 +43,7 @@ label{display:block;font-weight:700;margin-top:12px;}
 </head>
 <body>
 <div class="container">
-  <div class="header">
-    <div class="header-left">
-      <img src="logo.jpg" alt="Artuk Aviation Logo" class="logo">
-      <div>
-        <h1 style="margin:0;font-size:1.9rem;color:#1f3b64;">CNC İŞ EMRİ TAKİP SİSTEMİ</h1>
-        <p style="margin:6px 0 0;color:#55627a;font-size:0.95rem;max-width:420px;">Operasyonunuzu tek bir platformda takip edin. Sunucu merkezli verilerle her yerden ve her cihazdan güncel iş bilgisi.</p>
-      </div>
-    </div>
-    <div class="header-right">
-      <h2>ARTUK AVIATION</h2>
-      <div class="contact-line"><span>📍</span><div class="contact-text"><strong>Adres</strong><p>Organize Sanayi Bölgesi 1. Cadde 13. Sokak No:4 Merkez - AFYONKARAHİSAR</p></div></div>
-      <div class="contact-line"><span>📞</span><div class="contact-text"><strong>Telefon</strong><p>+90 272 502 30 50</p></div></div>
-      <div class="contact-line"><span>✉️</span><div class="contact-text"><strong>Email</strong><p>info@artukaviation.com</p></div></div>
-    </div>
-  </div>
+  <h1 class="page-title">ARTUK AVIATION</h1>
   <div class="panel">
     <h2>Üretim Durumu</h2>
     <div>Toplam Tamamlanan Parça: <strong id="counter">0</strong></div>
