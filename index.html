@@ -191,6 +191,11 @@ function temizleConfirm(){
 function temizle(){
   try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
   data = defaultData();
+  // For testing clear, reset counter to 0 so tamamlanan shows 0
+  data.counter = 0;
+  data.bekleyen = [];
+  data.tamamlanan = [];
+  data.aktif = null;
   kaydet();
   listele();
   try{ if(window.__cncSocket && window.__cncSocket.connected) window.__cncSocket.emit('push', data); }catch(e){}
