@@ -50,6 +50,14 @@ label{display:block;font-weight:700;margin-top:12px;}
 .summary-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
 .summary-row{display:flex;justify-content:space-between;padding:8px 6px;border-bottom:1px solid #eee;font-size:0.95rem;}
 .summary-row .muted{color:#666;font-size:0.9rem}
+.report-modal{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:10001;}
+.report-content{background:#fff;border-radius:10px;padding:14px;max-width:1100px;width:96%;max-height:86vh;overflow:auto;box-shadow:0 30px 60px rgba(0,0,0,0.35);}
+.report-table{width:100%;border-collapse:collapse;font-size:0.9rem;text-align:center}
+.report-table th,.report-table td{border:1px solid #e6e6e6;padding:6px}
+.report-table thead th{background:#f4f6fb;position:sticky;top:0;z-index:2}
+.report-left{min-width:260px;text-align:left;padding-left:10px;background:#fbfbfb}
+.tick{color:#0b6; font-weight:700}
+.no-tick{color:#bbb}
 .aktif{background:#eaf8ea;border-color:#c8e6c9;}
 .tamam{background:#f7f7f7;border-color:#d3d3d3;}
 .eski{background:#ffe5e5;border-color:#f5b7b7;}
@@ -68,6 +76,13 @@ label{display:block;font-weight:700;margin-top:12px;}
     <div id="summaryBody"></div>
   </div>
 </div>
+
+<div id="reportModal" class="report-modal">
+  <div class="report-content">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><h3>Ana Rapor</h3><div><button onclick="closeReport()">Kapat</button></div></div>
+    <div id="reportArea"></div>
+  </div>
+</div>
 <div class="container">
   <h1 class="page-title">ARTUK AVIATION</h1>
   <div class="panel">
@@ -75,7 +90,7 @@ label{display:block;font-weight:700;margin-top:12px;}
     <div class="status-line">Toplam Tamamlanan Parça: <strong id="counter">0</strong></div>
     <div class="status-line">Parça Döngüsü: <strong id="partLabel">1. parça - Tüm takımlar yeni</strong></div>
     <div class="status-line">Versiyon: <strong id="appVersion">dev</strong></div>
-    <div class="status-line"><button class="danger-button" onclick="temizleConfirm()">Tüm Verileri Sil</button></div>
+    <div class="status-line"><button class="danger-button" onclick="temizleConfirm()">Tüm Verileri Sil</button> <button onclick="showMainReport()" style="margin-left:8px;">Ana Rapor</button></div>
     <div class="status-line status-note">Sunucu Senkronizasyonu: <span class="status-pill syncing" id="syncStatus"><span class="status-dot"></span><span class="status-text">bekleniyor...</span></span></div>
   </div>
   <div class="grid">
@@ -536,6 +551,40 @@ function showSummary(index){
 function closeSummary(){
   const modal = document.getElementById('summaryModal');
   if(modal){ modal.style.display = 'none'; }
+}
+
+function showMainReport(){
+  const jobs = (data.tamamlanan || []).slice();
+  if(jobs.length===0){ alert('Tamamlanan iş bulunmuyor'); return; }
+  // sort by tamamZaman ascending
+  jobs.sort((a,b)=>{ const ta = a.tamamZaman?new Date(a.tamamZaman).getTime():0; const tb = b.tamamZaman?new Date(b.tamamZaman).getTime():0; return ta - tb; });
+  const area = document.getElementById('reportArea');
+  const maxCols = jobs.length;
+  // build table
+  let html = '<div style="overflow:auto"><table class="report-table"><thead><tr><th class="report-left">Takım</th><th>Değişim</th>';
+  jobs.forEach(j=>{ html += `<th>${j.no}</th>`; });
+  html += '</tr></thead><tbody>';
+  takimListesi.forEach(t=>{
+    const changeType = ucParcaDegisecek.includes(t)?'3 parça':'1 parça';
+    html += `<tr><td class="report-left"><b>${t}</b></td><td>${changeType}</td>`;
+    jobs.forEach(j=>{
+      const info = (j.takimlar && j.takimlar[t]) || {};
+      const changed = info.durum === 'YENİ';
+      const title = info.degistiren || '';
+      if(changed) html += `<td class="tick" title="Değiştiren: ${info.degistiren || ''}\nTarih: ${info.tarih?formatDateTime(info.tarih):''}">✓</td>`;
+      else html += `<td class="no-tick">-</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+  area.innerHTML = html;
+  const modal = document.getElementById('reportModal');
+  if(modal) modal.style.display = 'flex';
+}
+
+function closeReport(){
+  const modal = document.getElementById('reportModal');
+  if(modal) modal.style.display = 'none';
 }
 </script>
 </body>
