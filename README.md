@@ -14,6 +14,12 @@ Sunucu çalışınca:
 - `POST /api/data`: Gönderilen JSON'u `data.json` olarak kaydeder.
 - `http://localhost:3000/` : Dizin kökünden statik dosyaları (ör. `index.html`) servis eder.
 
+Notlar:
+- Sunucu Basic Auth korumalıdır. Varsayılan kullanıcı: `admin`, parola: `cnc2026`.
+- `index.html` artık otomatik olarak sunucuya bağlanır ve sunucudaki en son veriyi yüklemeye çalışır.
+- Eğer sunucuya bağlanılamazsa, tarayıcı yerel veriyi kullanır; ancak sunucuya bağlanabildiğinde en son sunucu verisi öncelikli olur.
+- Farklı tarayıcılarda veya cihazlarda aynı sunucu adresini ve kimlik bilgilerini kullanarak en son veriye erişebilirsin.
+
 Basit kullanım örneği (tarayıcı konsolu veya başka bir istemciden):
 
 ```js

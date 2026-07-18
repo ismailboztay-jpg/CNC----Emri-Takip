@@ -37,6 +37,7 @@ label{display:block;font-weight:700;margin-top:12px;}
     <div>Toplam Tamamlanan Parça: <strong id="counter">0</strong></div>
     <div>Parça Döngüsü: <strong id="partLabel">1. parça - Tüm takımlar yeni</strong></div>
     <div>Versiyon: <strong id="appVersion">dev</strong> <button style="background:#c62828;margin-left:10px;padding:6px 10px;border-radius:6px;border:0;color:#fff;cursor:pointer;" onclick="temizleConfirm()">Tüm Verileri Sil</button></div>
+    <div style="margin-top:8px;font-size:0.95rem;color:#555;">Sunucu Senkronizasyonu: <strong id="syncStatus">bekleniyor...</strong></div>
   </div>
   <div class="grid">
     <div class="panel">
@@ -75,6 +76,7 @@ label{display:block;font-weight:700;margin-top:12px;}
 </div>
 <script>
 const STORAGE_KEY = 'cncIsEmriData';
+const SERVER_API = '/api/data';
 const APP_VERSION = 'dev-1';
 const takimListesi = [
   'T01_AT0806_NC_PUNTA','T02_DR0420_9.7MM','T03_AT867_10MM','T04_ME0252_12MM_EM','T05_DR0504_10.5MM_MATKAP','T06_AT0662_0.458_EM_RM','T07_AT0663_.468_EM_RM','T08_ME0173_16MM_RGH','T09_ME0067_12MM_EM_RGH','T10_ME0067_12MM_EM_FIN','T11_AT0688_10MM_ENDMILL','T12_ME0250_8MM_EM','T13_MR0224_10MM_EM','T14_MB0106_8MM_CON_BN','T15_MR0225_12MM_EM','T16_MB0108_P6D_4TA','T17_AT0702_10MM_5FLT','T19_MB0107_10MM_3TA_CON_BN','T20_AT0747_10MM_5FLT','T21_AT0801_16MM_FIN','T22_AT0801_16MM_RGH','T23_MR0357_20MM_5F','T24_PME0003_10MM_EM','T25_AT0748_NEW_SC_FIN','T26_AT0748_NEW_SC_RGH'
@@ -85,7 +87,7 @@ const ucParcaDegisecek = [
 function defaultMachineState(){const liste={};takimListesi.forEach(t=>{liste[t]={durum:'ESKİ',degistiren:'',tarih:'',untilCounter:0};});return liste;}
 function defaultData(){return {bekleyen:[],aktif:null,tamamlanan:[],counter:0,machineState:defaultMachineState(),_updatedAt:0};}
 let data = defaultData();
-function loadData(){const value=localStorage.getItem(STORAGE_KEY);if(value){try{const parsed=JSON.parse(value);if(parsed&&typeof parsed==='object'){data=parsed;}else{data=defaultData();}}catch(e){data=defaultData();}}else{data=defaultData();}
+function normalizeData(){
   if(!Array.isArray(data.bekleyen)) data.bekleyen=[];
   if(!Array.isArray(data.tamamlanan)) data.tamamlanan=[];
   if(!('aktif' in data)) data.aktif=null;
@@ -94,9 +96,102 @@ function loadData(){const value=localStorage.getItem(STORAGE_KEY);if(value){try{
   if(!data.machineState || typeof data.machineState !== 'object') data.machineState = defaultMachineState();
   takimListesi.forEach(t=>{if(!data.machineState[t]) data.machineState[t]={durum:'ESKİ',degistiren:'',tarih:'',untilCounter:0};});
 }
-function kaydet(){
-  data._updatedAt = Date.now();
+function loadData(){
+  const value=localStorage.getItem(STORAGE_KEY);
+  if(value){
+    try{
+      const parsed=JSON.parse(value);
+      if(parsed&&typeof parsed==='object'){
+        data=parsed;
+      } else {
+        data=defaultData();
+      }
+    }catch(e){
+      data=defaultData();
+    }
+  } else {
+    data=defaultData();
+  }
+  normalizeData();
+}
+function saveLocalData(options={}){
+  if(!options.preserveUpdatedAt){
+    data._updatedAt = Date.now();
+  }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+function kaydet(){
+  saveLocalData();
+  updateSyncStatus('veri yerel olarak kaydedildi');
+}
+
+function updateSyncStatus(text){
+  const el = document.getElementById('syncStatus');
+  if(el) el.textContent = text;
+}
+
+async function loadServerData(){
+  const res = await fetch(SERVER_API, {credentials:'same-origin'});
+  if(!res.ok) throw new Error('server error');
+  return await res.json();
+}
+
+async function initData(){
+  loadData();
+  try{
+    const srv = await loadServerData();
+    const serverUpdated = srv._updatedAt || 0;
+    const localUpdated = data._updatedAt || 0;
+    if(serverUpdated > localUpdated){
+      data = srv;
+      normalizeData();
+      saveLocalData({preserveUpdatedAt:true});
+      listele();
+      updateSyncStatus('sunucudan yüklendi');
+    } else if(localUpdated > serverUpdated){
+      if(window.__cncSocket && window.__cncSocket.connected){
+        window.__cncSocket.emit('push', data);
+      } else {
+        try{
+          await fetch(SERVER_API, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),credentials:'same-origin'});
+        }catch(e){}
+      }
+      updateSyncStatus('sunucuya gönderildi');
+    } else {
+      listele();
+      updateSyncStatus('sunucu ile eşit');
+    }
+  }catch(e){
+    listele();
+    updateSyncStatus('sunucuya bağlanamadı; yerel veri kullanılıyor');
+  }
+}
+
+async function syncWithServer(){
+  try{
+    const res = await fetch(SERVER_API, {credentials:'same-origin'});
+    if(!res.ok) return;
+    const srv = await res.json();
+    const serverUpdated = srv._updatedAt || 0;
+    const localUpdated = data._updatedAt || 0;
+    if(serverUpdated > localUpdated){
+      data = srv;
+      normalizeData();
+      saveLocalData({preserveUpdatedAt:true});
+      listele();
+      updateSyncStatus('sunucudan güncellendi');
+    } else if(serverUpdated < localUpdated){
+      // local is newer; push to server if possible
+      if(window.__cncSocket && window.__cncSocket.connected){
+        window.__cncSocket.emit('push', data);
+      }
+      updateSyncStatus('sunucu güncel');
+    } else {
+      updateSyncStatus('sunucu ile eşit');
+    }
+  }catch(e){
+    updateSyncStatus('sunucuya bağlanamadı');
+  }
 }
 
 function zaman(){return new Date().toLocaleString('tr-TR');}
@@ -186,7 +281,8 @@ function listele(){const parcaNo=data.counter+1;document.getElementById('counter
   }
 }
 window.addEventListener('storage',()=>{loadData();listele();});
-loadData();listele();
+initData();
+setInterval(()=>{ if(!window.__cncSocket || !window.__cncSocket.connected) syncWithServer(); }, 10000);
 
 // show the current finish time for control verification
 try{
@@ -202,7 +298,7 @@ function temizleConfirm(){
 function temizle(){
   try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
   data = defaultData();
-  // For testing clear, reset counter to 0 so tamamlanan shows 0
+  data.machineState = defaultMachineState();
   data.counter = 0;
   data.bekleyen = [];
   data.tamamlanan = [];
@@ -227,7 +323,10 @@ function temizle(){
       const serverUpdated = srv._updatedAt || 0;
       const localUpdated = data._updatedAt || 0;
       if(serverUpdated > localUpdated && srv._clientId !== CLIENT_ID){
-        data = srv; kaydet(); listele();
+        data = srv;
+        normalizeData();
+        saveLocalData({preserveUpdatedAt:true});
+        listele();
       }
     });
 
@@ -241,6 +340,9 @@ function temizle(){
 
     // request immediate sync
     try{ socket.emit('get'); }catch(e){}
+    setInterval(()=>{
+      try{ socket.emit('get'); }catch(e){}
+    }, 10000);
   }).catch(()=>{console.warn('Socket.IO client failed to load, falling back to periodic sync');});
 })();
 
@@ -252,12 +354,17 @@ window.addEventListener('focus', async () => {
       return;
     }
     // fallback: HTTP fetch
-    const res = await fetch('/api/data');
+    const res = await fetch(SERVER_API);
     if(!res.ok) return;
     const srv = await res.json();
     const serverUpdated = srv._updatedAt || 0;
     const localUpdated = data._updatedAt || 0;
-    if(serverUpdated > localUpdated){ data = srv; kaydet(); listele(); }
+    if(serverUpdated > localUpdated){
+      data = srv;
+      normalizeData();
+      saveLocalData({preserveUpdatedAt:true});
+      listele();
+    }
   }catch(e){/* ignore */}
 });
 </script>
