@@ -174,9 +174,10 @@ function listele(){const parcaNo=data.counter+1;document.getElementById('counter
 window.addEventListener('storage',()=>{loadData();listele();});
 loadData();listele();
 
-// show a static control label for loading verification
+// show the current finish time for control verification
 try{
-  const el = document.getElementById('assistantFinishStamp'); if(el) el.textContent = 'ali';
+  const el = document.getElementById('assistantFinishStamp');
+  if(el) el.textContent = `Yazma Bitti: ${new Date().toLocaleTimeString('tr-TR')}`;
 }catch(e){}
 
 function temizleConfirm(){
