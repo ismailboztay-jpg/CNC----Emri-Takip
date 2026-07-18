@@ -80,7 +80,7 @@ const takimListesi = [
 const ucParcaDegisecek = [
   'T01_AT0806_NC_PUNTA','T02_DR0420_9.7MM','T03_AT867_10MM','T05_DR0504_10.5MM_MATKAP','T06_AT0662_0.458_EM_RM','T07_AT0663_.468_EM_RM','T11_AT0688_10MM_ENDMILL','T14_MB0106_8MM_CON_BN','T16_MB0108_P6D_4TA','T17_AT0702_10MM_5FLT'
 ];
-function defaultData(){return {bekleyen:[],aktif:null,tamamlanan:[],counter:0};}
+function defaultData(){return {bekleyen:[],aktif:null,tamamlanan:[],counter:0,_updatedAt:0};}
 let data = defaultData();
 function loadData(){const value=localStorage.getItem(STORAGE_KEY);if(value){try{const parsed=JSON.parse(value);if(parsed&&typeof parsed==='object'){data=parsed;}else{data=defaultData();}}catch(e){data=defaultData();}}else{data=defaultData();}
   if(!Array.isArray(data.bekleyen)) data.bekleyen=[];
@@ -123,7 +123,18 @@ function listele(){const parcaNo=data.counter+1;document.getElementById('counter
   const aktif=document.getElementById('aktif');if(data.aktif){aktif.innerHTML=`<div class="is aktif"><h3>${data.aktif.no}</h3>Aktif Eden: ${data.aktif.aktifEden}<br>Aktif Zaman: ${data.aktif.aktifZaman}<br><br><button onclick="tamamla()">Tamamla</button></div>`;}else{aktif.innerHTML='Aktif iş yok';}
   const takimlar=document.getElementById('takimlar');if(data.aktif){takimlar.innerHTML=takimListesi.map(t=>{const info=data.aktif.takimlar[t];const renk=info.durum==='YENİ'?'yeni':'eski';const label=isNewByCycle(t, parcaNo)?'<div class="change-label">Bu parçada yeni</div>':'<div class="change-label">Bu parçada eski</div>';
       return`<div class="is ${renk}"><b>${t}</b><br>Durum: ${info.durum}<br>${label}${info.degistiren?`Değiştiren: ${info.degistiren}<br>`:''}${info.tarih?`Tarih: ${info.tarih}<br>`:''}<button class="status-button ${info.durum==='YENİ'?'yeni':'eski'}" onclick="takimDegistir('${t}')">${info.durum==='ESKİ'?'Yeni Yap':'Eski Yap'}</button></div>`;}).join('');}else{takimlar.innerHTML='Aktif iş yok';}
-  const tamamlanan=document.getElementById('tamamlanan');if(data.tamamlanan.length===0){tamamlanan.innerHTML='<div>Tamamlanan iş yok</div>';}else{tamamlanan.innerHTML=data.tamamlanan.map((x,i)=>`<div class="is tamam"><b>${x.no}</b><br>Aktif Eden: ${x.aktifEden}<br>Aktif Zaman: ${x.aktifZaman}<br>Tamamlayan: ${x.tamamlayan}<br>Tamam Zaman: ${x.tamamZaman}<br>Toplam Süre: ${sureHesapla(x.aktifZaman,x.tamamZaman)}<br><br><button onclick="tekrarAktif(${i})">Tekrar Aktif Yap</button></div>`).join('');}}
+  const tamamlanan=document.getElementById('tamamlanan');
+  if(!data.tamamlanan || data.tamamlanan.length===0){
+    tamamlanan.innerHTML = '<div>Tamamlanan iş yok</div>';
+  } else {
+    const sorted = data.tamamlanan.slice().sort((a,b)=>{
+      const ta = a.tamamZaman ? new Date(a.tamamZaman).getTime() : 0;
+      const tb = b.tamamZaman ? new Date(b.tamamZaman).getTime() : 0;
+      return ta - tb;
+    });
+    tamamlanan.innerHTML = sorted.map((x,i)=>`<div class="is tamam"><b>${x.no}</b><br>Aktif Eden: ${x.aktifEden}<br>Aktif Zaman: ${x.aktifZaman}<br>Tamamlayan: ${x.tamamlayan}<br>Tamam Zaman: ${x.tamamZaman}<br>Toplam Süre: ${sureHesapla(x.aktifZaman,x.tamamZaman)}<br><br><button onclick="tekrarAktif(${i})">Tekrar Aktif Yap</button></div>`).join('');
+  }
+}
 window.addEventListener('storage',()=>{loadData();listele();});
 loadData();listele();
 
