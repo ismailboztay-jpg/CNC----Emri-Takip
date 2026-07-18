@@ -34,7 +34,7 @@ label{display:block;font-weight:700;margin-top:12px;}
     <h2>Üretim Durumu</h2>
     <div>Toplam Tamamlanan Parça: <strong id="counter">0</strong></div>
     <div>Parça Döngüsü: <strong id="partLabel">1. parça - Tüm takımlar yeni</strong></div>
-    <div>Versiyon: <strong id="appVersion">dev</strong></div>
+    <div>Versiyon: <strong id="appVersion">dev</strong> <button style="background:#c62828;margin-left:10px;padding:6px 10px;border-radius:6px;border:0;color:#fff;cursor:pointer;" onclick="temizleConfirm()">Tüm Verileri Sil</button></div>
   </div>
   <div class="grid">
     <div class="panel">
@@ -139,6 +139,19 @@ function listele(){const parcaNo=data.counter+1;document.getElementById('counter
 }
 window.addEventListener('storage',()=>{loadData();listele();});
 loadData();listele();
+
+function temizleConfirm(){
+  if(confirm('Tüm verileri silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')){
+    temizle();
+  }
+}
+function temizle(){
+  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+  data = defaultData();
+  kaydet();
+  listele();
+  try{ if(window.__cncSocket && window.__cncSocket.connected) window.__cncSocket.emit('push', data); }catch(e){}
+}
 
 // --- Real-time sync via Socket.IO ---
 ; (function(){
