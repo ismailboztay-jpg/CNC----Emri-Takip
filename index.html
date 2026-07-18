@@ -10,14 +10,16 @@
 <style>
 body{font-family:'Inter',Arial,sans-serif;background:#f1f3f5;margin:0;padding:0;color:#2b3a4a;}
 .container{max-width:1200px;margin:20px auto;padding:20px;}
-.header{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:20px;text-align:center;}
-.header img.logo{max-width:220px;width:100%;height:auto;}
-.company-card{width:100%;background:#ffffff;border:1px solid rgba(27, 62, 106, 0.08);border-radius:16px;padding:20px;box-shadow:0 18px 40px rgba(43, 58, 74, 0.08);display:grid;grid-template-columns:1fr;gap:14px;max-width:980px;}
-.company-card h2{margin:0;color:#173759;font-size:1.1rem;letter-spacing:0.04em;text-transform:uppercase;font-weight:700;}
-.company-card p{margin:0;color:#425066;line-height:1.6;}
-.company-card .contact-row{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;}
-.company-card .contact-row span{font-size:1.05rem;line-height:1.5;}
-.company-card .contact-text{display:flex;flex-direction:column;gap:4px;}
+.header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:18px;margin-bottom:20px;}
+.header-left{display:flex;align-items:center;gap:18px;min-width:280px;}
+.header img.logo{max-width:180px;width:100%;height:auto;display:block;}
+.header-right{flex:1 1 420px;background:#ffffff;border:1px solid rgba(27,62,106,0.08);border-radius:16px;padding:18px 20px;box-shadow:0 18px 40px rgba(43,58,74,0.08);}
+.header-right h2{margin:0 0 8px;color:#173759;font-size:1rem;letter-spacing:0.04em;text-transform:uppercase;font-weight:700;}
+.header-right p{margin:0;color:#425066;line-height:1.5;font-size:0.94rem;}
+.header-right .contact-line{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;}
+.header-right .contact-line:last-child{margin-bottom:0;}
+.header-right .contact-line span{font-size:1rem;line-height:1.4;}
+.header-right .contact-text strong{display:block;font-size:0.88rem;color:#1f3b64;margin-bottom:2px;font-weight:600;}
 .panel{background:white;border-radius:10px;padding:18px;margin-bottom:20px;box-shadow:0 10px 24px rgba(0,0,0,0.06);}
 h1{margin:0 0 10px;font-size:2rem;color:#1f4e79;text-align:center;}
 button{padding:10px 14px;background:#1f4e79;color:#fff;border:0;border-radius:6px;cursor:pointer;}
@@ -41,15 +43,19 @@ label{display:block;font-weight:700;margin-top:12px;}
 <body>
 <div class="container">
   <div class="header">
-    <img src="logo.jpg" alt="Artuk Aviation Logo" class="logo">
-    <h1>CNC İŞ EMRİ TAKİP SİSTEMİ</h1>
-  </div>
-  <div class="company-card">
-    <h2>ARTUK AVIATION SAVUNMA SANAYİ VE TİCARET LİMİTED ŞİRKETİ</h2>
-    <div class="contact-row"><span>📍</span><div class="contact-text"><p><strong>Adres</strong></p><p>Organize Sanayi Bölgesi 1. Cadde 13. Sokak No:4 Merkez - AFYONKARAHİSAR</p></div></div>
-    <div class="contact-row"><span>📞</span><div class="contact-text"><p><strong>Telefon</strong></p><p>+90 272 502 30 50</p></div></div>
-    <div class="contact-row"><span>📠</span><div class="contact-text"><p><strong>Faks</strong></p><p>+90 272 502 30 50</p></div></div>
-    <div class="contact-row"><span>✉️</span><div class="contact-text"><p><strong>Email</strong></p><p>info@artukaviation.com</p></div></div>
+    <div class="header-left">
+      <img src="logo.jpg" alt="Artuk Aviation Logo" class="logo">
+      <div>
+        <h1 style="margin:0;font-size:1.9rem;color:#1f3b64;">CNC İŞ EMRİ TAKİP SİSTEMİ</h1>
+        <p style="margin:6px 0 0;color:#55627a;font-size:0.95rem;max-width:420px;">Operasyonunuzu tek bir platformda takip edin. Sunucu merkezli verilerle her yerden ve her cihazdan güncel iş bilgisi.</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <h2>ARTUK AVIATION</h2>
+      <div class="contact-line"><span>📍</span><div class="contact-text"><strong>Adres</strong><p>Organize Sanayi Bölgesi 1. Cadde 13. Sokak No:4 Merkez - AFYONKARAHİSAR</p></div></div>
+      <div class="contact-line"><span>📞</span><div class="contact-text"><strong>Telefon</strong><p>+90 272 502 30 50</p></div></div>
+      <div class="contact-line"><span>✉️</span><div class="contact-text"><strong>Email</strong><p>info@artukaviation.com</p></div></div>
+    </div>
   </div>
   <div class="panel">
     <h2>Üretim Durumu</h2>
