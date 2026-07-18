@@ -278,10 +278,28 @@ function isNewByCycle(t, parcaNo){const phase=parcaSiklus(parcaNo);
 }
 function resetMachineStateForPart4(){takimListesi.forEach(t=>{const s=data.machineState[t];if(s){s.durum='ESKİ';s.degistiren='';s.tarih='';s.untilCounter=0;}});}
 function yeniTakimDurumu(parcaNo){const liste={};takimListesi.forEach(t=>{const base=data.machineState[t]||{durum:'ESKİ',degistiren:'',tarih:'',untilCounter:0};const isYeni = parcaSiklus(parcaNo)===1 ? false : (typeof base.untilCounter==='number' && base.untilCounter >= parcaNo);liste[t]={durum:isYeni?'YENİ':'ESKİ',degistiren:isYeni?base.degistiren:'',tarih:isYeni?base.tarih:'',untilCounter:isYeni?base.untilCounter:0};});return liste;}
-function yeniIs(){const no=document.getElementById('isNo').value.trim();if(!no){alert('İş emri no giriniz');return;}data.bekleyen.push({no,olusturma:zaman(),takimlar:yeniTakimDurumu(data.counter+1),aktifZaman:'',aktifEden:'',tamamZaman:'',tamamlayan:''});document.getElementById('isNo').value='';kaydet();listele();}
+function yeniIs(){
+  const pw = prompt('Yeni iş oluşturmak için şifreyi girin:');
+  if(pw !== '82646284'){
+    alert('Şifre yanlış. İş oluşturma iptal edildi.');
+    return;
+  }
+  const no = document.getElementById('isNo').value.trim();
+  if(!no){alert('İş emri no giriniz');return;}
+  data.bekleyen.push({no,olusturma:zaman(),takimlar:yeniTakimDurumu(data.counter+1),aktifZaman:'',aktifEden:'',tamamZaman:'',tamamlayan:''});
+  document.getElementById('isNo').value='';
+  kaydet();
+  listele();
+}
 function aktifEt(index){if(data.aktif){alert('Zaten aktif iş var');return;}const isim=document.getElementById('aktifEdenInput').value.trim();if(!isim){alert('Aktif eden kişi giriniz');return;}const is=data.bekleyen.splice(index,1)[0];const partNo=data.counter+1;if((partNo-1)%3===0){resetMachineStateForPart4();}is.takimlar=yeniTakimDurumu(partNo);is.aktifZaman=zaman();is.aktifEden=isim;is.tamamZaman='';is.tamamlayan='';data.aktif=is;document.getElementById('aktifEdenInput').value='';kaydet();listele();}
 function tamamla(){if(!data.aktif){return;}const isim=document.getElementById('tamamlayanInput').value.trim();if(!isim){alert('Tamamlayan kişi giriniz');return;}data.aktif.tamamZaman=zaman();data.aktif.tamamlayan=isim;data.tamamlanan.push(data.aktif);data.aktif=null;data.counter++;document.getElementById('tamamlayanInput').value='';kaydet();listele();}
-function tekrarAktif(index){if(data.aktif){alert('Önce aktif işi tamamlayın');return;}const isim=document.getElementById('aktifEdenInput').value.trim();if(!isim){alert('Aktif eden kişi giriniz');return;}const is=data.tamamlanan.splice(index,1)[0];const partNo=data.counter+1;if((partNo-1)%3===0){resetMachineStateForPart4();}is.takimlar=yeniTakimDurumu(partNo);is.aktifZaman=zaman();is.aktifEden=isim;is.tamamZaman='';is.tamamlayan='';data.aktif=is;document.getElementById('aktifEdenInput').value='';kaydet();listele();}
+function tekrarAktif(index){
+  const pw = prompt('Tekrar aktif yapmak için şifreyi girin:');
+  if(pw !== '82646284'){
+    alert('Şifre yanlış. İş tekrar aktif edilmedi.');
+    return;
+  }
+  if(data.aktif){alert('Önce aktif işi tamamlayın');return;}const isim=document.getElementById('aktifEdenInput').value.trim();if(!isim){alert('Aktif eden kişi giriniz');return;}const is=data.tamamlanan.splice(index,1)[0];const partNo=data.counter+1;if((partNo-1)%3===0){resetMachineStateForPart4();}is.takimlar=yeniTakimDurumu(partNo);is.aktifZaman=zaman();is.aktifEden=isim;is.tamamZaman='';is.tamamlayan='';data.aktif=is;document.getElementById('aktifEdenInput').value='';kaydet();listele();}
 function takimDegistir(t){
   if(!data.aktif) return;
   const takim = data.aktif.takimlar[t];
