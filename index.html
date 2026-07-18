@@ -287,7 +287,16 @@ setInterval(()=>{ if(!window.__cncSocket || !window.__cncSocket.connected) syncW
 // show the current finish time for control verification
 try{
   const el = document.getElementById('assistantFinishStamp');
-  if(el) el.textContent = `Yazma Bitti: ${new Date().toLocaleTimeString('tr-TR')}`;
+  if(el){
+    // Use a one-time fixed stamp per device: set on first open and keep it unchanged afterwards
+    const KEY = 'assistant_fixed_stamp';
+    let stamp = localStorage.getItem(KEY);
+    if(!stamp){
+      stamp = new Date().toLocaleString('tr-TR');
+      try{ localStorage.setItem(KEY, stamp); }catch(e){}
+    }
+    el.textContent = `Yazma Bitti: "${stamp}"`;
+  }
 }catch(e){}
 
 function temizleConfirm(){
