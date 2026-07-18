@@ -34,7 +34,7 @@ label{display:block;font-weight:700;margin-top:12px;}
     <h2>Üretim Durumu</h2>
     <div>Toplam Tamamlanan Parça: <strong id="counter">0</strong></div>
     <div>Parça Döngüsü: <strong id="partLabel">1. parça - Tüm takımlar yeni</strong></div>
-    <div>Son Güncelleme: <strong id="serverStamp">—</strong> &nbsp; Versiyon: <strong id="appVersion">dev</strong></div>
+    <div>Versiyon: <strong id="appVersion">dev</strong></div>
   </div>
   <div class="grid">
     <div class="panel">
@@ -116,8 +116,7 @@ function takimDegistir(t){if(!data.aktif){return;}const takim=data.aktif.takimla
 function sureHesapla(a,b){const diff=new Date(b)-new Date(a);if(isNaN(diff))return'';const saat=Math.floor(diff/3600000);const dakika=Math.floor((diff%3600000)/60000);return`${saat} saat ${dakika} dakika`;}
 function degisecekMi(t){const parcaNo=data.counter+1;return isNewByCycle(t, parcaNo);}
 function listele(){const parcaNo=data.counter+1;document.getElementById('counter').textContent=data.counter;document.getElementById('partLabel').textContent=parcaAciklama(parcaNo);
-  // show last update timestamp and app version (development helper)
-  try{document.getElementById('serverStamp').textContent = data._updatedAt ? new Date(data._updatedAt).toLocaleString('tr-TR') : '—';}catch(e){}
+  // show app version (development helper)
   try{document.getElementById('appVersion').textContent = APP_VERSION;}catch(e){}
   const bekleyen=document.getElementById('bekleyen');if(data.bekleyen.length===0){bekleyen.innerHTML='<div>Bekleyen iş yok</div>';}else{bekleyen.innerHTML=data.bekleyen.map((x,i)=>`<div class="is"><b>${x.no}</b><br>Oluşturma: ${x.olusturma}<br><button onclick="aktifEt(${i})" ${data.aktif?'disabled':''}>İşi Aktif Et</button></div>`).join('');}
   const aktif=document.getElementById('aktif');if(data.aktif){aktif.innerHTML=`<div class="is aktif"><h3>${data.aktif.no}</h3>Aktif Eden: ${data.aktif.aktifEden}<br>Aktif Zaman: ${data.aktif.aktifZaman}<br><br><button onclick="tamamla()">Tamamla</button></div>`;}else{aktif.innerHTML='Aktif iş yok';}
