@@ -200,7 +200,7 @@ function takimMetaKutucuklari(t){
   const info = takimBilgileri[t];
   if(!info) return '';
   const mm = inchToMmStr(info.baglamaInch);
-  return `<div class="tool-meta-chips"><span class="tool-chip"><span class="chip-label">Kod</span>${info.kod}</span><span class="tool-chip baglama"><span class="chip-label">Bağlama</span>${mm} mm</span></div>`;
+  return `<div class="tool-meta-chips"><span class="tool-chip"><span class="chip-label">Takım Kodu</span>${info.kod}</span><span class="tool-chip baglama"><span class="chip-label">Bağlama Boyu</span>${mm} mm</span></div>`;
 }
 const grupOkSvg = '<svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><path d="M14 4v14M14 18l-6-6M14 18l6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const ucParcaDegisecek = [
