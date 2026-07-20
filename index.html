@@ -75,6 +75,7 @@ label{display:block;font-weight:700;margin-top:12px;}
 .status-button.eski{background:#d9534f;}
 .status-button.yeni{background:#5cb85c;}
 .change-label{display:inline-block;padding:4px 8px;background:#fff4cc;color:#7a5800;border-radius:6px;font-size:0.9rem;margin:6px 0;}
+.swap-label{display:block;padding:6px 8px;background:#e8f0fe;color:#1a4480;border-radius:6px;font-size:0.88rem;margin:6px 0;line-height:1.45;font-weight:600;}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
 @media(max-width:960px){.grid{grid-template-columns:1fr;}#partLabel{font-size:0.95rem;}}</style>
 </head>
@@ -148,6 +149,15 @@ const takimListesi = [
 const ucParcaDegisecek = [
   'T01_AT0806_NC_PUNTA','T02_DR0420_9.7MM','T03_AT867_10MM','T05_DR0504_10.5MM_MATKAP','T06_AT0662_0.458_EM_RM','T07_AT0663_.468_EM_RM','T11_AT0688_10MM_ENDMILL','T14_MB0106_8MM_CON_BN','T16_MB0108_P6D_4TA','T17_AT0702_10MM_5FLT'
 ];
+const takimSwapNotlari = {
+  'T09_ME0067_12MM_EM_RGH':'buraya t10 dan çıkan takımı bağla, buraya yeni takım bağla',
+  'T10_ME0067_12MM_EM_FIN':'burdan çıkanı t9 a bağla',
+  'T21_AT0801_16MM_FIN':'burdan çıkanı t22 a bağla, buraya yeni takım bağla',
+  'T22_AT0801_16MM_RGH':'buraya t21 dan çıkan takımı bağla',
+  'T25_AT0748_NEW_SC_FIN':'burdan çıkanı t26 a bağla, buraya yeni takım bağla',
+  'T26_AT0748_NEW_SC_RGH':'buraya t25 dan çıkan takımı bağla'
+};
+function takimSwapNotu(t){ return takimSwapNotlari[t] || ''; }
 function defaultMachineState(){const liste={};takimListesi.forEach(t=>{liste[t]={durum:'ESKİ',degistiren:'',tarih:'',untilCounter:0};});return liste;}
 function defaultData(){return {bekleyen:[],aktif:null,tamamlanan:[],counter:0,machineState:defaultMachineState(),_updatedAt:0};}
 let data = defaultData();
@@ -420,7 +430,9 @@ function listele(){const parcaNo=data.counter+1;document.getElementById('counter
         const remaining = Math.max(0, info.untilCounter - data.counter);
         label += `<div class="change-label">Kalan: ${remaining} parça</div>`;
       }
-      return `<div class="is ${renk}"><b>${t}</b><br>Durum: ${isYeni ? 'YENİ' : 'ESKİ'}<br>${label}${info.degistiren?`Değiştiren: ${info.degistiren}<br>`:''}${info.tarih?`Tarih: ${formatDateTime(info.tarih)}<br>`:''}<button class="status-button ${isYeni?'yeni':'eski'}" onclick="takimDegistir('${t}')">${isYeni?'Eski Yap':'Yeni Yap'}</button></div>`;
+      const swapNot = takimSwapNotu(t);
+      const swapLabel = swapNot ? `<div class="swap-label">${swapNot}</div>` : '';
+      return `<div class="is ${renk}"><b>${t}</b><br>Durum: ${isYeni ? 'YENİ' : 'ESKİ'}<br>${label}${swapLabel}${info.degistiren?`Değiştiren: ${info.degistiren}<br>`:''}${info.tarih?`Tarih: ${formatDateTime(info.tarih)}<br>`:''}<button class="status-button ${isYeni?'yeni':'eski'}" onclick="takimDegistir('${t}')">${isYeni?'Eski Yap':'Yeni Yap'}</button></div>`;
     }).join('');
   } else {takimlar.innerHTML='Aktif iş yok';}
   const tamamlanan=document.getElementById('tamamlanan');
