@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 body{font-family:'Inter',Arial,sans-serif;background:#f1f3f5;margin:0;padding:0;color:#2b3a4a;}
+.update-badge{position:fixed;top:14px;right:16px;z-index:1000;padding:6px 12px;border-radius:999px;font-size:0.78rem;font-weight:600;letter-spacing:0.03em;color:#1f4e79;background:#fff;border:1px solid rgba(31,78,121,0.18);box-shadow:0 4px 14px rgba(43,58,74,0.08);}
 .container{max-width:1200px;margin:20px auto;padding:20px;}
 .page-title{margin:0 0 20px;font-size:1.5rem;color:#173759;text-align:center;letter-spacing:0.12em;text-transform:uppercase;}
 .panel{background:white;border-radius:10px;padding:18px;margin-bottom:20px;box-shadow:0 10px 24px rgba(0,0,0,0.06);}
@@ -75,11 +76,14 @@ label{display:block;font-weight:700;margin-top:12px;}
 .status-button.eski{background:#d9534f;}
 .status-button.yeni{background:#5cb85c;}
 .change-label{display:inline-block;padding:4px 8px;background:#fff4cc;color:#7a5800;border-radius:6px;font-size:0.9rem;margin:6px 0;}
-.swap-label{display:block;padding:6px 8px;background:#e8f0fe;color:#1a4480;border-radius:6px;font-size:0.88rem;margin:6px 0;line-height:1.45;font-weight:600;}
+.tool-pair-note{display:inline-flex;align-items:center;gap:5px;margin-left:10px;padding:3px 9px;border-radius:6px;font-size:0.8rem;font-weight:500;color:#6d4c00;background:#fff8e6;border:1px solid #ffe082;vertical-align:middle;line-height:1.35;}
+.tool-pair-note .arrow{color:#c77800;font-weight:700;font-size:0.95rem;}
+.tool-name-row{display:flex;flex-wrap:wrap;align-items:center;gap:4px 0;margin-bottom:4px;}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
 @media(max-width:960px){.grid{grid-template-columns:1fr;}#partLabel{font-size:0.95rem;}}</style>
 </head>
 <body>
+<div class="update-badge" id="updateBadge">Güncelleme #2</div>
 <div id="summaryModal" class="summary-modal" style="display:none;">
   <div class="summary-content">
     <div class="summary-header"><h3 id="summaryTitle">İş Özeti</h3><button onclick="closeSummary()" style="margin-left:12px;">Kapat</button></div>
@@ -143,21 +147,25 @@ label{display:block;font-weight:700;margin-top:12px;}
 const STORAGE_KEY = 'cncIsEmriData';
 const SERVER_API = '/api/data';
 const APP_VERSION = 'dev-1';
+const UPDATE_NO = 2;
 const takimListesi = [
   'T01_AT0806_NC_PUNTA','T02_DR0420_9.7MM','T03_AT867_10MM','T04_ME0252_12MM_EM','T05_DR0504_10.5MM_MATKAP','T06_AT0662_0.458_EM_RM','T07_AT0663_.468_EM_RM','T08_ME0173_16MM_RGH','T09_ME0067_12MM_EM_RGH','T10_ME0067_12MM_EM_FIN','T11_AT0688_10MM_ENDMILL','T12_ME0250_8MM_EM','T13_MR0224_10MM_EM','T14_MB0106_8MM_CON_BN','T15_MR0225_12MM_EM','T16_MB0108_P6D_4TA','T17_AT0702_10MM_5FLT','T19_MB0107_10MM_3TA_CON_BN','T20_AT0747_10MM_5FLT','T21_AT0801_16MM_FIN','T22_AT0801_16MM_RGH','T23_MR0357_20MM_5F','T24_PME0003_10MM_EM','T25_AT0748_NEW_SC_FIN','T26_AT0748_NEW_SC_RGH'
 ];
 const ucParcaDegisecek = [
   'T01_AT0806_NC_PUNTA','T02_DR0420_9.7MM','T03_AT867_10MM','T05_DR0504_10.5MM_MATKAP','T06_AT0662_0.458_EM_RM','T07_AT0663_.468_EM_RM','T11_AT0688_10MM_ENDMILL','T14_MB0106_8MM_CON_BN','T16_MB0108_P6D_4TA','T17_AT0702_10MM_5FLT'
 ];
-const takimSwapNotlari = {
-  'T09_ME0067_12MM_EM_RGH':'buraya t10 dan çıkan takımı bağla, buraya yeni takım bağla',
-  'T10_ME0067_12MM_EM_FIN':'burdan çıkanı t9 a bağla',
-  'T21_AT0801_16MM_FIN':'burdan çıkanı t22 a bağla, buraya yeni takım bağla',
-  'T22_AT0801_16MM_RGH':'buraya t21 dan çıkan takımı bağla',
-  'T25_AT0748_NEW_SC_FIN':'burdan çıkanı t26 a bağla, buraya yeni takım bağla',
-  'T26_AT0748_NEW_SC_RGH':'buraya t25 dan çıkan takımı bağla'
-};
-function takimSwapNotu(t){ return takimSwapNotlari[t] || ''; }
+const takimRotasyonCiftleri = [
+  {kaba:'T09_ME0067_12MM_EM_RGH', finish:'T10_ME0067_12MM_EM_FIN', kabaKisa:'T09', finishKisa:'T10'},
+  {kaba:'T22_AT0801_16MM_RGH', finish:'T21_AT0801_16MM_FIN', kabaKisa:'T22', finishKisa:'T21'},
+  {kaba:'T26_AT0748_NEW_SC_RGH', finish:'T25_AT0748_NEW_SC_FIN', kabaKisa:'T26', finishKisa:'T25'}
+];
+function takimRotasyonNotu(t){
+  for(const c of takimRotasyonCiftleri){
+    if(t === c.kaba) return `<span class="tool-pair-note"><span class="arrow">→</span> ${c.finishKisa}'den çıkan takımı buraya tak</span>`;
+    if(t === c.finish) return `<span class="tool-pair-note"><span class="arrow">→</span> Çıkan takımı ${c.kabaKisa}'ya aktar · buraya yeni takım tak</span>`;
+  }
+  return '';
+}
 function defaultMachineState(){const liste={};takimListesi.forEach(t=>{liste[t]={durum:'ESKİ',degistiren:'',tarih:'',untilCounter:0};});return liste;}
 function defaultData(){return {bekleyen:[],aktif:null,tamamlanan:[],counter:0,machineState:defaultMachineState(),_updatedAt:0};}
 let data = defaultData();
@@ -415,8 +423,8 @@ function formatDateTime(value){
 }
 function degisecekMi(t){const parcaNo=data.counter+1;return isNewByCycle(t, parcaNo);}
 function listele(){const parcaNo=data.counter+1;document.getElementById('counter').textContent=data.counter;document.getElementById('partLabel').innerHTML=parcaAciklama(parcaNo);
-  // show app version (development helper)
   try{document.getElementById('appVersion').textContent = APP_VERSION;}catch(e){}
+  try{document.getElementById('updateBadge').textContent = 'Güncelleme #' + UPDATE_NO;}catch(e){}
   const bekleyen=document.getElementById('bekleyen');if(data.bekleyen.length===0){bekleyen.innerHTML='<div>Bekleyen iş yok</div>';}else{bekleyen.innerHTML=data.bekleyen.map((x,i)=>`<div class="is"><b>${x.no}</b><br>Oluşturma: ${x.olusturma}<br><button onclick="aktifEt(${i})" ${data.aktif?'disabled':''}>İşi Aktif Et</button></div>`).join('');}
   const aktif=document.getElementById('aktif');if(data.aktif){aktif.innerHTML=`<div class="is aktif"><h3>${data.aktif.no}</h3>Aktif Eden: ${data.aktif.aktifEden}<br>Aktif Zaman: ${formatDateTime(data.aktif.aktifZaman)}<br><br><button onclick="tamamla()">Tamamla</button></div>`;}else{aktif.innerHTML='Aktif iş yok';}
   const takimlar=document.getElementById('takimlar');
@@ -430,9 +438,7 @@ function listele(){const parcaNo=data.counter+1;document.getElementById('counter
         const remaining = Math.max(0, info.untilCounter - data.counter);
         label += `<div class="change-label">Kalan: ${remaining} parça</div>`;
       }
-      const swapNot = takimSwapNotu(t);
-      const swapLabel = swapNot ? `<div class="swap-label">${swapNot}</div>` : '';
-      return `<div class="is ${renk}"><b>${t}</b><br>Durum: ${isYeni ? 'YENİ' : 'ESKİ'}<br>${label}${swapLabel}${info.degistiren?`Değiştiren: ${info.degistiren}<br>`:''}${info.tarih?`Tarih: ${formatDateTime(info.tarih)}<br>`:''}<button class="status-button ${isYeni?'yeni':'eski'}" onclick="takimDegistir('${t}')">${isYeni?'Eski Yap':'Yeni Yap'}</button></div>`;
+      return `<div class="is ${renk}"><div class="tool-name-row"><b>${t}</b>${takimRotasyonNotu(t)}</div>Durum: ${isYeni ? 'YENİ' : 'ESKİ'}<br>${label}${info.degistiren?`Değiştiren: ${info.degistiren}<br>`:''}${info.tarih?`Tarih: ${formatDateTime(info.tarih)}<br>`:''}<button class="status-button ${isYeni?'yeni':'eski'}" onclick="takimDegistir('${t}')">${isYeni?'Eski Yap':'Yeni Yap'}</button></div>`;
     }).join('');
   } else {takimlar.innerHTML='Aktif iş yok';}
   const tamamlanan=document.getElementById('tamamlanan');
