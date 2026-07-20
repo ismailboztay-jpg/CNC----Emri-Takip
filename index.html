@@ -56,6 +56,15 @@ label{display:block;font-weight:700;margin-top:12px;}
 .report-table th,.report-table td{border:1px solid #e6e6e6;padding:6px}
 .report-table thead th{background:#f4f6fb;position:sticky;top:0;z-index:2}
 .report-left{min-width:260px;text-align:left;padding-left:10px;background:#fbfbfb}
+@media print{
+  body{background:#fff;}
+  body>*:not(#reportModal){display:none!important;}
+  #reportModal{display:block!important;position:static;inset:auto;background:none;}
+  .report-content{max-height:none;overflow:visible;box-shadow:none;width:100%;max-width:none;padding:0;border-radius:0;}
+  .report-table{font-size:0.75rem;}
+  .report-table thead th{position:static;}
+  .no-print{display:none!important;}
+}
 .tick{color:#0b6; font-weight:700}
 .no-tick{color:#bbb}
 .aktif{background:#eaf8ea;border-color:#c8e6c9;}
@@ -79,7 +88,7 @@ label{display:block;font-weight:700;margin-top:12px;}
 
 <div id="reportModal" class="report-modal">
   <div class="report-content">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><h3>Ana Rapor</h3><div><button onclick="closeReport()">Kapat</button></div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><h3>Ana Rapor</h3><div class="no-print"><button onclick="printReport()" style="margin-right:8px;">Yazdır</button><button onclick="closeReport()">Kapat</button></div></div>
     <div id="reportArea"></div>
   </div>
 </div>
@@ -585,6 +594,10 @@ function showMainReport(){
 function closeReport(){
   const modal = document.getElementById('reportModal');
   if(modal) modal.style.display = 'none';
+}
+
+function printReport(){
+  window.print();
 }
 </script>
 </body>
