@@ -159,52 +159,20 @@ const UPDATE_NO = 3;
 const takimListesi = [
   'T01_AT0806_NC_PUNTA','T02_DR0420_9.7MM','T03_AT867_10MM','T04_ME0252_12MM_EM','T05_DR0504_10.5MM_MATKAP','T06_AT0662_0.458_EM_RM','T07_AT0663_.468_EM_RM','T08_ME0173_16MM_RGH','T09_ME0067_12MM_EM_RGH','T10_ME0067_12MM_EM_FIN','T11_AT0688_10MM_ENDMILL','T12_ME0250_8MM_EM','T13_MR0224_10MM_EM','T14_MB0106_8MM_CON_BN','T15_MR0225_12MM_EM','T16_MB0108_P6D_4TA','T17_AT0702_10MM_5FLT','T19_MB0107_10MM_3TA_CON_BN','T20_AT0747_10MM_5FLT','T21_AT0801_16MM_FIN','T22_AT0801_16MM_RGH','T23_MR0357_20MM_5F','T24_PME0003_10MM_EM','T25_AT0748_NEW_SC_FIN','T26_AT0748_NEW_SC_RGH'
 ];
-const takimDetaylari = {
-  'T01_AT0806_NC_PUNTA': { kod: 'AT0806', bg: 1.0 },
-  'T02_DR0420_9.7MM': { kod: 'DR0420', bg: 1.5 },
-  'T03_AT867_10MM': { kod: 'AT0867', bg: 1.2 },
-  'T04_ME0252_12MM_EM': { kod: 'ME0252', bg: 1.6 },
-  'T05_DR0504_10.5MM_MATKAP': { kod: 'DR0504', bg: 3.2 },
-  'T06_AT0662_0.458_EM_RM': { kod: 'AT0662', bg: 3.2 },
-  'T07_AT0663_.468_EM_RM': { kod: 'AT0663', bg: 3.2 },
-  'T08_ME0173_16MM_RGH': { kod: 'ME0173', bg: 2.0 },
-  'T09_ME0067_12MM_EM_RGH': { kod: 'ME0067', bg: 1.7 },
-  'T10_ME0067_12MM_EM_FIN': { kod: 'ME0067', bg: 1.7 },
-  'T11_AT0688_10MM_ENDMILL': { kod: 'AT0688', bg: 3.2 },
-  'T12_ME0250_8MM_EM': { kod: 'ME0250', bg: 1.3 },
-  'T13_MR0224_10MM_EM': { kod: 'MR0224', bg: 1.4 },
-  'T14_MB0106_8MM_CON_BN': { kod: 'MB0106', bg: 3.1 },
-  'T15_MR0225_12MM_EM': { kod: 'MR0225', bg: 1.5 },
-  'T16_MB0108_P6D_4TA': { kod: 'MB0108', bg: 3.4 },
-  'T17_AT0702_10MM_5FLT': { kod: 'AT0702', bg: 1.6 },
-  'T19_MB0107_10MM_3TA_CON_BN': { kod: 'MB0107', bg: 3.4 },
-  'T20_AT0747_10MM_5FLT': { kod: 'AT0747', bg: 1.5 },
-  'T21_AT0801_16MM_FIN': { kod: 'AT0801', bg: 2.6 },
-  'T22_AT0801_16MM_RGH': { kod: 'AT0801', bg: 2.6 },
-  'T23_MR0357_20MM_5F': { kod: 'MR0357', bg: 2.6 },
-  'T24_PME0003_10MM_EM': { kod: 'PME0003', bg: 1.5 },
-  'T25_AT0748_NEW_SC_FIN': { kod: 'AT0748', bg: 3.4 },
-  'T26_AT0748_NEW_SC_RGH': { kod: 'AT0748', bg: 3.4 }
-};
 const ucParcaDegisecek = [
   'T01_AT0806_NC_PUNTA','T02_DR0420_9.7MM','T03_AT867_10MM','T05_DR0504_10.5MM_MATKAP','T06_AT0662_0.458_EM_RM','T07_AT0663_.468_EM_RM','T11_AT0688_10MM_ENDMILL','T14_MB0106_8MM_CON_BN','T16_MB0108_P6D_4TA','T17_AT0702_10MM_5FLT'
 ];
 const takimRotasyonCiftleri = [
-  {kaba:'T09_ME0067_12MM_EM_RGH', finish:'T10_ME0067_12MM_EM_FIN', kabaKisa:'T09', finishKisa:'T10', yon:'f2k'},
-  {kaba:'T22_AT0801_16MM_RGH', finish:'T21_AT0801_16MM_FIN', kabaKisa:'T22', finishKisa:'T21', yon:'f2k'},
-  {kaba:'T26_AT0748_NEW_SC_RGH', finish:'T25_AT0748_NEW_SC_FIN', kabaKisa:'T26', finishKisa:'T25', yon:'f2k'}
+  {kaba:'T09_ME0067_12MM_EM_RGH', finish:'T10_ME0067_12MM_EM_FIN', kabaKisa:'T09', finishKisa:'T10'},
+  {kaba:'T22_AT0801_16MM_RGH', finish:'T21_AT0801_16MM_FIN', kabaKisa:'T22', finishKisa:'T21'},
+  {kaba:'T26_AT0748_NEW_SC_RGH', finish:'T25_AT0748_NEW_SC_FIN', kabaKisa:'T26', finishKisa:'T25'}
 ];
 function takimRotasyonNotu(t){
   for(const c of takimRotasyonCiftleri){
-    if(t === c.kaba) return `<span class="tool-pair-note"><span class="arrow">←</span> ${c.finishKisa}'dan çıkan takımı buraya tak</span>`;
+    if(t === c.kaba) return `<span class="tool-pair-note"><span class="arrow">→</span> ${c.finishKisa}'den çıkan takımı buraya tak</span>`;
     if(t === c.finish) return `<span class="tool-pair-note"><span class="arrow">→</span> Çıkan takımı ${c.kabaKisa}'ya aktar · buraya yeni takım tak</span>`;
   }
   return '';
-}
-function ekleTakimKutucuklari(t){
-  const d = takimDetaylari[t];
-  if(!d) return '';
-  return `<span style="display:inline-block; margin-left:8px; padding:2px 6px; background:#e9ecef; border:1px solid #ced4da; border-radius:4px; font-size:0.8rem; font-weight:600; color:#495057;">Kod: ${d.kod}</span><span style="display:inline-block; margin-left:4px; padding:2px 6px; background:#e2f0d9; border:1px solid #a9d08e; border-radius:4px; font-size:0.8rem; font-weight:600; color:#385723;">Bağlama: ${d.bg.toFixed(1)}</span>`;
 }
 function takimGrupBul(t){
   for(let i=0;i<takimRotasyonCiftleri.length;i++){
@@ -227,8 +195,8 @@ function renderTakimKarti(t){
     const remaining = Math.max(0, info.untilCounter - data.counter);
     label += `<div class="change-label">Kalan: ${remaining} parça</div>`;
   }
-  
-function renderTakimKarti(t){ const info = data.aktif.takimlar[t] || {}; const isYeni = info.durum === 'YENİ'; const renk = isYeni ? 'yeni' : 'eski'; let label = isYeni ? '<div class="change-label">Bu parçada yeni</div>' : '<div class="change-label">Bu parçada eski</div>'; if(isYeni && ucParcaDegisecek.includes(t)){ const remaining = Math.max(0, info.untilCounter - data.counter); label += `<div class="change-label">Kalan: ${remaining} parça</div>`; } return `<div class="is ${renk}"><div class="tool-name-row"><b>${t}</b>${ekleTakimKutucuklari(t)}${takimRotasyonNotu(t)}</div>Durum: ${isYeni ? 'YENİ' : 'ESKİ'}<br>${label}${info.degistiren?`Değiştiren: ${info.degistiren}<br>`:''}${info.tarih?`Tarih: ${formatDateTime(info.tarih)}<br>`:''}<button class="status-button ${isYeni?'yeni':'eski'}" onclick="takimDegistir('${t}')">${isYeni?'Eski Yap':'Yeni Yap'}</button></div>`; }}
+  return `<div class="is ${renk}"><div class="tool-name-row"><b>${t}</b>${takimRotasyonNotu(t)}</div>Durum: ${isYeni ? 'YENİ' : 'ESKİ'}<br>${label}${info.degistiren?`Değiştiren: ${info.degistiren}<br>`:''}${info.tarih?`Tarih: ${formatDateTime(info.tarih)}<br>`:''}<button class="status-button ${isYeni?'yeni':'eski'}" onclick="takimDegistir('${t}')">${isYeni?'Eski Yap':'Yeni Yap'}</button></div>`;
+}
 function renderTakimlarListesi(){
   const rendered = new Set();
   let html = '';
@@ -511,7 +479,17 @@ function listele(){const parcaNo=data.counter+1;document.getElementById('counter
   const aktif=document.getElementById('aktif');if(data.aktif){aktif.innerHTML=`<div class="is aktif"><h3>${data.aktif.no}</h3>Aktif Eden: ${data.aktif.aktifEden}<br>Aktif Zaman: ${formatDateTime(data.aktif.aktifZaman)}<br><br><button onclick="tamamla()">Tamamla</button></div>`;}else{aktif.innerHTML='Aktif iş yok';}
   const takimlar=document.getElementById('takimlar');
   if(data.aktif){
-    takimlar.innerHTML = renderTakimlarListesi();
+    takimlar.innerHTML = takimListesi.map(t => {
+      const info = data.aktif.takimlar[t] || {};
+      const isYeni = info.durum === 'YENİ';
+      const renk = isYeni ? 'yeni' : 'eski';
+      let label = isYeni ? '<div class="change-label">Bu parçada yeni</div>' : '<div class="change-label">Bu parçada eski</div>';
+      if(isYeni && ucParcaDegisecek.includes(t)){
+        const remaining = Math.max(0, info.untilCounter - data.counter);
+        label += `<div class="change-label">Kalan: ${remaining} parça</div>`;
+      }
+      return `<div class="is ${renk}"><div class="tool-name-row"><b>${t}</b>${takimRotasyonNotu(t)}</div>Durum: ${isYeni ? 'YENİ' : 'ESKİ'}<br>${label}${info.degistiren?`Değiştiren: ${info.degistiren}<br>`:''}${info.tarih?`Tarih: ${formatDateTime(info.tarih)}<br>`:''}<button class="status-button ${isYeni?'yeni':'eski'}" onclick="takimDegistir('${t}')">${isYeni?'Eski Yap':'Yeni Yap'}</button></div>`;
+    }).join('');
   } else {takimlar.innerHTML='Aktif iş yok';}
   const tamamlanan=document.getElementById('tamamlanan');
   if(!data.tamamlanan || data.tamamlanan.length===0){
