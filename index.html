@@ -93,6 +93,20 @@ label{display:block;font-weight:700;margin-top:12px;}
 .tool-chip.baglama{background:#eef7ff;border-color:#90caf9;color:#0d47a1;}
 .tool-group-arrow{display:flex;align-items:center;justify-content:center;gap:8px;padding:2px 0 6px;color:#c77800;font-size:0.78rem;font-weight:600;letter-spacing:0.02em;}
 .tool-group-arrow svg{flex-shrink:0;filter:drop-shadow(0 1px 1px rgba(0,0,0,0.08));}
+.password-modal{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;z-index:10002;}
+.password-content{background:#fff;border-radius:10px;padding:20px 22px;max-width:420px;width:92%;box-shadow:0 30px 60px rgba(0,0,0,0.35);}
+.password-content h3{margin:0 0 8px;font-size:1.1rem;color:#173759;}
+.password-content p{margin:0 0 14px;color:#4a607a;font-size:0.95rem;line-height:1.45;}
+.password-field-wrap{position:relative;display:flex;align-items:center;margin-bottom:16px;}
+.password-field-wrap input{padding:10px 44px 10px 12px;margin:0;font-size:1rem;letter-spacing:0.12em;font-family:'Inter',Arial,sans-serif;}
+.password-eye-btn{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:36px;height:36px;padding:0;border:0;border-radius:6px;background:transparent;color:#5a7189;cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;touch-action:none;}
+.password-eye-btn:hover{background:#eef3f8;color:#1f4e79;}
+.password-eye-btn:active{background:#dde8f2;color:#173759;}
+.password-eye-btn svg{width:20px;height:20px;pointer-events:none;}
+.password-actions{display:flex;justify-content:flex-end;gap:8px;}
+.password-actions button{margin:0;}
+.password-cancel-btn{background:#eef2f6;color:#2b3a4a;}
+.password-cancel-btn:hover:not(:disabled){background:#dde4eb;}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
 @media(max-width:960px){.grid{grid-template-columns:1fr;}#partLabel{font-size:0.95rem;}}</style>
 </head>
@@ -109,6 +123,22 @@ label{display:block;font-weight:700;margin-top:12px;}
   <div class="report-content">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><h3>Ana Rapor</h3><div class="no-print"><button onclick="printReport()" style="margin-right:8px;">Yazdır</button><button onclick="closeReport()">Kapat</button></div></div>
     <div id="reportArea"></div>
+  </div>
+</div>
+<div id="passwordModal" class="password-modal">
+  <div class="password-content">
+    <h3>Şifre Gerekli</h3>
+    <p id="passwordModalMessage"></p>
+    <div class="password-field-wrap">
+      <input type="text" id="passwordModalInput" autocomplete="off" spellcheck="false" aria-label="Şifre">
+      <button type="button" class="password-eye-btn" id="passwordEyeBtn" aria-label="Basılı tutunca şifreyi göster" title="Basılı tutunca şifreyi göster">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+    <div class="password-actions">
+      <button type="button" class="password-cancel-btn" onclick="closePasswordModal(null)">İptal</button>
+      <button type="button" onclick="submitPasswordModal()">Onayla</button>
+    </div>
   </div>
 </div>
 <div class="container">
@@ -161,6 +191,96 @@ const STORAGE_KEY = 'cncIsEmriData';
 const SERVER_API = '/api/data';
 const APP_VERSION = 'dev-1';
 const UPDATE_NO = 4;
+const ADMIN_PASSWORD = '82646284';
+let pwResolve = null;
+let pwRealValue = '';
+let pwShowPlain = false;
+function pwUpdateDisplay(){
+  const input = document.getElementById('passwordModalInput');
+  if(!input) return;
+  input.value = pwShowPlain ? pwRealValue : '*'.repeat(pwRealValue.length);
+  input.setSelectionRange(pwRealValue.length, pwRealValue.length);
+}
+function pwReset(){
+  pwRealValue = '';
+  pwShowPlain = false;
+  pwUpdateDisplay();
+}
+function closePasswordModal(result){
+  const modal = document.getElementById('passwordModal');
+  if(modal) modal.style.display = 'none';
+  pwReset();
+  if(pwResolve){ const r = pwResolve; pwResolve = null; r(result); }
+}
+function submitPasswordModal(){
+  closePasswordModal(pwRealValue);
+}
+function askPassword(message){
+  return new Promise(resolve=>{
+    pwResolve = resolve;
+    const msg = document.getElementById('passwordModalMessage');
+    if(msg) msg.textContent = message;
+    pwReset();
+    const modal = document.getElementById('passwordModal');
+    if(modal) modal.style.display = 'flex';
+    setTimeout(()=>{ const input = document.getElementById('passwordModalInput'); if(input) input.focus(); }, 50);
+  });
+}
+function initPasswordModal(){
+  const input = document.getElementById('passwordModalInput');
+  const eye = document.getElementById('passwordEyeBtn');
+  if(!input || !eye) return;
+  input.addEventListener('keydown', e=>{
+    if(e.key === 'Backspace' || e.key === 'Delete'){
+      e.preventDefault();
+      if(input.selectionStart !== input.selectionEnd){
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+        pwRealValue = pwRealValue.slice(0, start) + pwRealValue.slice(end);
+      } else if(e.key === 'Backspace' && pwRealValue.length){
+        pwRealValue = pwRealValue.slice(0, -1);
+      } else if(e.key === 'Delete' && input.selectionStart < pwRealValue.length){
+        const pos = input.selectionStart;
+        pwRealValue = pwRealValue.slice(0, pos) + pwRealValue.slice(pos + 1);
+      }
+      pwUpdateDisplay();
+    } else if(e.key === 'Enter'){
+      e.preventDefault();
+      submitPasswordModal();
+    } else if(e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey){
+      e.preventDefault();
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      if(start !== end){
+        pwRealValue = pwRealValue.slice(0, start) + e.key + pwRealValue.slice(end);
+      } else {
+        pwRealValue += e.key;
+      }
+      pwUpdateDisplay();
+    }
+  });
+  input.addEventListener('paste', e=>{
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text');
+    if(!text) return;
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    pwRealValue = pwRealValue.slice(0, start) + text + pwRealValue.slice(end);
+    pwUpdateDisplay();
+  });
+  const showPlain = ()=>{ pwShowPlain = true; pwUpdateDisplay(); };
+  const hidePlain = ()=>{ pwShowPlain = false; pwUpdateDisplay(); };
+  eye.addEventListener('mousedown', e=>{ e.preventDefault(); showPlain(); });
+  eye.addEventListener('mouseup', hidePlain);
+  eye.addEventListener('mouseleave', hidePlain);
+  eye.addEventListener('touchstart', e=>{ e.preventDefault(); showPlain(); }, {passive:false});
+  eye.addEventListener('touchend', hidePlain);
+  eye.addEventListener('touchcancel', hidePlain);
+  const modal = document.getElementById('passwordModal');
+  if(modal){
+    modal.addEventListener('click', e=>{ if(e.target === modal) closePasswordModal(null); });
+  }
+}
 const takimListesi = [
   'T01_AT0806_NC_PUNTA','T02_DR0420_9.7MM','T03_AT867_10MM','T04_ME0252_12MM_EM','T05_DR0504_10.5MM_MATKAP','T06_AT0662_0.458_EM_RM','T07_AT0663_.468_EM_RM','T08_ME0173_16MM_RGH','T09_ME0067_12MM_EM_RGH','T10_ME0067_12MM_EM_FIN','T11_AT0688_10MM_ENDMILL','T12_ME0250_8MM_EM','T13_MR0224_10MM_EM','T14_MB0106_8MM_CON_BN','T15_MR0225_12MM_EM','T16_MB0108_P6D_4TA','T17_AT0702_10MM_5FLT','T19_MB0107_10MM_3TA_CON_BN','T20_AT0747_10MM_5FLT','T21_AT0801_16MM_FIN','T22_AT0801_16MM_RGH','T23_MR0357_20MM_5F','T24_PME0003_10MM_EM','T25_AT0748_NEW_SC_FIN','T26_AT0748_NEW_SC_RGH'
 ];
@@ -427,9 +547,10 @@ function isNewByCycle(t, parcaNo){const phase=parcaSiklus(parcaNo);
 }
 function resetMachineStateForPart4(){takimListesi.forEach(t=>{const s=data.machineState[t];if(s){s.durum='ESKİ';s.degistiren='';s.tarih='';s.untilCounter=0;}});}
 function yeniTakimDurumu(parcaNo){const liste={};takimListesi.forEach(t=>{const base=data.machineState[t]||{durum:'ESKİ',degistiren:'',tarih:'',untilCounter:0};const isYeni = parcaSiklus(parcaNo)===1 ? false : (typeof base.untilCounter==='number' && base.untilCounter >= parcaNo);liste[t]={durum:isYeni?'YENİ':'ESKİ',degistiren:isYeni?base.degistiren:'',tarih:isYeni?base.tarih:'',untilCounter:isYeni?base.untilCounter:0};});return liste;}
-function yeniIs(){
-  const pw = prompt('Yeni iş oluşturmak için şifreyi girin:');
-  if(pw !== '82646284'){
+async function yeniIs(){
+  const pw = await askPassword('Yeni iş oluşturmak için şifreyi girin:');
+  if(pw === null) return;
+  if(pw !== ADMIN_PASSWORD){
     alert('Şifre yanlış. İş oluşturma iptal edildi.');
     return;
   }
@@ -442,9 +563,10 @@ function yeniIs(){
 }
 function aktifEt(index){if(data.aktif){alert('Zaten aktif iş var');return;}const isim=document.getElementById('aktifEdenInput').value.trim();if(!isim){alert('Aktif eden kişi giriniz');return;}const is=data.bekleyen.splice(index,1)[0];const partNo=data.counter+1;if((partNo-1)%3===0){resetMachineStateForPart4();}is.takimlar=yeniTakimDurumu(partNo);is.aktifZaman=zaman();is.aktifEden=isim;is.tamamZaman='';is.tamamlayan='';data.aktif=is;document.getElementById('aktifEdenInput').value='';kaydet();listele();}
 function tamamla(){if(!data.aktif){return;}const isim=document.getElementById('tamamlayanInput').value.trim();if(!isim){alert('Tamamlayan kişi giriniz');return;}data.aktif.tamamZaman=zaman();data.aktif.tamamlayan=isim;data.tamamlanan.push(data.aktif);data.aktif=null;data.counter++;document.getElementById('tamamlayanInput').value='';kaydet();listele();}
-function tekrarAktif(index){
-  const pw = prompt('Tekrar aktif yapmak için şifreyi girin:');
-  if(pw !== '82646284'){
+async function tekrarAktif(index){
+  const pw = await askPassword('Tekrar aktif yapmak için şifreyi girin:');
+  if(pw === null) return;
+  if(pw !== ADMIN_PASSWORD){
     alert('Şifre yanlış. İş tekrar aktif edilmedi.');
     return;
   }
@@ -546,14 +668,16 @@ function listele(){const parcaNo=data.counter+1;document.getElementById('counter
   }
 }
 window.addEventListener('storage',()=>{loadData();listele();});
+initPasswordModal();
 initData();
 setInterval(()=>{ if(!window.__cncSocket || !window.__cncSocket.connected) syncWithServer(); }, 10000);
 
 // show the current finish time for control verification
 
-function temizleConfirm(){
-  const password = prompt('Tüm verileri silmeden önce şifreyi girin:');
-  if(password !== '82646284'){
+async function temizleConfirm(){
+  const password = await askPassword('Tüm verileri silmeden önce şifreyi girin:');
+  if(password === null) return;
+  if(password !== ADMIN_PASSWORD){
     alert('Şifre yanlış. Veri silme işlemi iptal edildi.');
     return;
   }
