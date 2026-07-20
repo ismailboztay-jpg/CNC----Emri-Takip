@@ -93,25 +93,29 @@ label{display:block;font-weight:700;margin-top:12px;}
 .tool-chip.baglama{background:#eef7ff;border-color:#90caf9;color:#0d47a1;}
 .tool-group-arrow{display:flex;align-items:center;justify-content:center;gap:8px;padding:2px 0 6px;color:#c77800;font-size:0.78rem;font-weight:600;letter-spacing:0.02em;}
 .tool-group-arrow svg{flex-shrink:0;filter:drop-shadow(0 1px 1px rgba(0,0,0,0.08));}
-.password-modal{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;z-index:10002;}
-.password-content{background:#fff;border-radius:10px;padding:20px 22px;max-width:420px;width:92%;box-shadow:0 30px 60px rgba(0,0,0,0.35);}
+.password-modal{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;z-index:10002;padding:16px;box-sizing:border-box;-webkit-overflow-scrolling:touch;}
+.password-content{background:#fff;border-radius:10px;padding:20px 22px;max-width:420px;width:100%;box-shadow:0 30px 60px rgba(0,0,0,0.35);box-sizing:border-box;}
 .password-content h3{margin:0 0 8px;font-size:1.1rem;color:#173759;}
 .password-content p{margin:0 0 14px;color:#4a607a;font-size:0.95rem;line-height:1.45;}
 .password-field-wrap{position:relative;display:flex;align-items:center;margin-bottom:16px;}
-.password-field-wrap input{padding:10px 44px 10px 12px;margin:0;font-size:1rem;letter-spacing:0.12em;font-family:'Inter',Arial,sans-serif;}
-.password-eye-btn{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:36px;height:36px;padding:0;border:0;border-radius:6px;background:transparent;color:#5a7189;cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;touch-action:none;}
+.password-field-wrap input{padding:12px 48px 12px 12px;margin:0;font-size:16px;letter-spacing:0.12em;font-family:'Inter',Arial,sans-serif;-webkit-text-size-adjust:100%;}
+.password-eye-btn{position:absolute;right:2px;top:50%;transform:translateY(-50%);width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border:0;border-radius:8px;background:transparent;color:#5a7189;cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent;}
 .password-eye-btn:hover{background:#eef3f8;color:#1f4e79;}
-.password-eye-btn:active{background:#dde8f2;color:#173759;}
-.password-eye-btn svg{width:20px;height:20px;pointer-events:none;}
-.password-actions{display:flex;justify-content:flex-end;gap:8px;}
-.password-actions button{margin:0;}
+.password-eye-btn:active,.password-eye-btn.is-active{background:#dde8f2;color:#173759;}
+.password-eye-btn svg{width:22px;height:22px;pointer-events:none;}
+.password-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;}
+.password-actions button{margin:0;min-height:44px;padding:10px 16px;}
 .password-cancel-btn{background:#eef2f6;color:#2b3a4a;}
 .password-cancel-btn:hover:not(:disabled){background:#dde4eb;}
+@media(max-width:720px){
+  .password-content{padding:18px 16px;border-radius:12px;}
+  .password-actions button{flex:1;min-width:120px;}
+}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
 @media(max-width:960px){.grid{grid-template-columns:1fr;}#partLabel{font-size:0.95rem;}}</style>
 </head>
 <body>
-<div class="update-badge" id="updateBadge">Güncelleme #4</div>
+<div class="update-badge" id="updateBadge">Güncelleme #5</div>
 <div id="summaryModal" class="summary-modal" style="display:none;">
   <div class="summary-content">
     <div class="summary-header"><h3 id="summaryTitle">İş Özeti</h3><button onclick="closeSummary()" style="margin-left:12px;">Kapat</button></div>
@@ -130,7 +134,7 @@ label{display:block;font-weight:700;margin-top:12px;}
     <h3>Şifre Gerekli</h3>
     <p id="passwordModalMessage"></p>
     <div class="password-field-wrap">
-      <input type="text" id="passwordModalInput" autocomplete="off" spellcheck="false" aria-label="Şifre">
+      <input type="text" id="passwordModalInput" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="numeric" enterkeyhint="done" aria-label="Şifre">
       <button type="button" class="password-eye-btn" id="passwordEyeBtn" aria-label="Basılı tutunca şifreyi göster" title="Basılı tutunca şifreyi göster">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
       </button>
@@ -142,7 +146,7 @@ label{display:block;font-weight:700;margin-top:12px;}
   </div>
 </div>
 <div class="container">
-  <h1 class="page-title">artuk aviation</h1>
+  <h1 class="page-title">artuk avıatıon</h1>
   <div class="panel">
     <h2>30G2225 Üretim Durumu</h2>
     <div class="status-line">Toplam Tamamlanan Parça: <strong id="counter">0</strong></div>
@@ -195,11 +199,37 @@ const ADMIN_PASSWORD = '82646284';
 let pwResolve = null;
 let pwRealValue = '';
 let pwShowPlain = false;
+const pwSupportsBeforeInput = typeof InputEvent !== 'undefined' && 'inputType' in InputEvent.prototype;
 function pwUpdateDisplay(){
   const input = document.getElementById('passwordModalInput');
   if(!input) return;
   input.value = pwShowPlain ? pwRealValue : '*'.repeat(pwRealValue.length);
-  input.setSelectionRange(pwRealValue.length, pwRealValue.length);
+  try{ input.setSelectionRange(pwRealValue.length, pwRealValue.length); }catch(e){}
+}
+function pwApplyInputChange(e){
+  const input = document.getElementById('passwordModalInput');
+  if(!input) return;
+  const start = input.selectionStart ?? pwRealValue.length;
+  const end = input.selectionEnd ?? pwRealValue.length;
+  const type = e.inputType || '';
+  if(type === 'deleteContentBackward'){
+    if(start !== end) pwRealValue = pwRealValue.slice(0, start) + pwRealValue.slice(end);
+    else if(start > 0) pwRealValue = pwRealValue.slice(0, start - 1) + pwRealValue.slice(start);
+  } else if(type === 'deleteContentForward'){
+    if(start !== end) pwRealValue = pwRealValue.slice(0, start) + pwRealValue.slice(end);
+    else if(start < pwRealValue.length) pwRealValue = pwRealValue.slice(0, start) + pwRealValue.slice(start + 1);
+  } else if((type === 'insertText' || type === 'insertCompositionText') && e.data){
+    pwRealValue = pwRealValue.slice(0, start) + e.data + pwRealValue.slice(end);
+  } else if(type === 'insertFromPaste' || type === 'insertFromDrop'){
+    if(e.data) pwRealValue = pwRealValue.slice(0, start) + e.data + pwRealValue.slice(end);
+  } else if(type === 'deleteByCut'){
+    if(start !== end) pwRealValue = pwRealValue.slice(0, start) + pwRealValue.slice(end);
+  }
+  pwUpdateDisplay();
+}
+function pwSyncPlainFromInput(){
+  const input = document.getElementById('passwordModalInput');
+  if(input && pwShowPlain) pwRealValue = input.value;
 }
 function pwReset(){
   pwRealValue = '';
@@ -223,62 +253,109 @@ function askPassword(message){
     pwReset();
     const modal = document.getElementById('passwordModal');
     if(modal) modal.style.display = 'flex';
-    setTimeout(()=>{ const input = document.getElementById('passwordModalInput'); if(input) input.focus(); }, 50);
+    requestAnimationFrame(()=>{
+      setTimeout(()=>{
+        const input = document.getElementById('passwordModalInput');
+        if(input){
+          input.focus({preventScroll:true});
+          try{ input.setSelectionRange(0, 0); }catch(e){}
+        }
+      }, 80);
+    });
   });
 }
 function initPasswordModal(){
   const input = document.getElementById('passwordModalInput');
   const eye = document.getElementById('passwordEyeBtn');
+  const content = document.querySelector('.password-content');
   if(!input || !eye) return;
+
+  input.addEventListener('beforeinput', e=>{
+    if(pwShowPlain) return;
+    e.preventDefault();
+    pwApplyInputChange(e);
+  });
+
+  input.addEventListener('input', ()=>{
+    if(pwShowPlain) pwSyncPlainFromInput();
+  });
+
   input.addEventListener('keydown', e=>{
-    if(e.key === 'Backspace' || e.key === 'Delete'){
-      e.preventDefault();
-      if(input.selectionStart !== input.selectionEnd){
-        const start = input.selectionStart;
-        const end = input.selectionEnd;
-        pwRealValue = pwRealValue.slice(0, start) + pwRealValue.slice(end);
-      } else if(e.key === 'Backspace' && pwRealValue.length){
-        pwRealValue = pwRealValue.slice(0, -1);
-      } else if(e.key === 'Delete' && input.selectionStart < pwRealValue.length){
-        const pos = input.selectionStart;
-        pwRealValue = pwRealValue.slice(0, pos) + pwRealValue.slice(pos + 1);
-      }
-      pwUpdateDisplay();
-    } else if(e.key === 'Enter'){
+    if(e.key === 'Enter'){
       e.preventDefault();
       submitPasswordModal();
-    } else if(e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey){
+      return;
+    }
+    if(pwSupportsBeforeInput || pwShowPlain) return;
+    if(e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey){
       e.preventDefault();
-      const start = input.selectionStart;
-      const end = input.selectionEnd;
+      const start = input.selectionStart ?? pwRealValue.length;
+      const end = input.selectionEnd ?? pwRealValue.length;
+      pwRealValue = pwRealValue.slice(0, start) + e.key + pwRealValue.slice(end);
+      pwUpdateDisplay();
+    } else if(e.key === 'Backspace' || e.key === 'Delete'){
+      e.preventDefault();
+      const start = input.selectionStart ?? pwRealValue.length;
+      const end = input.selectionEnd ?? pwRealValue.length;
       if(start !== end){
-        pwRealValue = pwRealValue.slice(0, start) + e.key + pwRealValue.slice(end);
-      } else {
-        pwRealValue += e.key;
+        pwRealValue = pwRealValue.slice(0, start) + pwRealValue.slice(end);
+      } else if(e.key === 'Backspace' && start > 0){
+        pwRealValue = pwRealValue.slice(0, start - 1) + pwRealValue.slice(start);
+      } else if(e.key === 'Delete' && start < pwRealValue.length){
+        pwRealValue = pwRealValue.slice(0, start) + pwRealValue.slice(start + 1);
       }
       pwUpdateDisplay();
     }
   });
+
   input.addEventListener('paste', e=>{
     e.preventDefault();
+    if(pwSupportsBeforeInput && !pwShowPlain) return;
     const text = (e.clipboardData || window.clipboardData).getData('text');
     if(!text) return;
-    const start = input.selectionStart;
-    const end = input.selectionEnd;
+    const start = input.selectionStart ?? pwRealValue.length;
+    const end = input.selectionEnd ?? pwRealValue.length;
     pwRealValue = pwRealValue.slice(0, start) + text + pwRealValue.slice(end);
     pwUpdateDisplay();
   });
-  const showPlain = ()=>{ pwShowPlain = true; pwUpdateDisplay(); };
-  const hidePlain = ()=>{ pwShowPlain = false; pwUpdateDisplay(); };
-  eye.addEventListener('mousedown', e=>{ e.preventDefault(); showPlain(); });
-  eye.addEventListener('mouseup', hidePlain);
-  eye.addEventListener('mouseleave', hidePlain);
-  eye.addEventListener('touchstart', e=>{ e.preventDefault(); showPlain(); }, {passive:false});
-  eye.addEventListener('touchend', hidePlain);
-  eye.addEventListener('touchcancel', hidePlain);
+
+  const showPlain = ()=>{
+    pwShowPlain = true;
+    eye.classList.add('is-active');
+    pwUpdateDisplay();
+  };
+  const hidePlain = ()=>{
+    pwSyncPlainFromInput();
+    pwShowPlain = false;
+    eye.classList.remove('is-active');
+    pwUpdateDisplay();
+  };
+
+  if(window.PointerEvent){
+    eye.addEventListener('pointerdown', e=>{
+      e.preventDefault();
+      if(eye.setPointerCapture) eye.setPointerCapture(e.pointerId);
+      showPlain();
+    });
+    eye.addEventListener('pointerup', hidePlain);
+    eye.addEventListener('pointercancel', hidePlain);
+    eye.addEventListener('pointerleave', hidePlain);
+  } else {
+    eye.addEventListener('mousedown', e=>{ e.preventDefault(); showPlain(); });
+    eye.addEventListener('mouseup', hidePlain);
+    eye.addEventListener('mouseleave', hidePlain);
+    eye.addEventListener('touchstart', e=>{ e.preventDefault(); showPlain(); }, {passive:false});
+    eye.addEventListener('touchend', hidePlain);
+    eye.addEventListener('touchcancel', hidePlain);
+  }
+  eye.addEventListener('contextmenu', e=> e.preventDefault());
+
   const modal = document.getElementById('passwordModal');
   if(modal){
     modal.addEventListener('click', e=>{ if(e.target === modal) closePasswordModal(null); });
+  }
+  if(content){
+    content.addEventListener('click', e=> e.stopPropagation());
   }
 }
 const takimListesi = [
@@ -429,8 +506,10 @@ function kaydet(){
 }
 
 function setAppEnabled(enabled){
-  const elements = document.querySelectorAll('button,input');
-  elements.forEach(el=>{el.disabled = !enabled;});
+  document.querySelectorAll('button, input').forEach(el=>{
+    if(el.closest('#passwordModal')) return;
+    el.disabled = !enabled;
+  });
   const overlay = document.getElementById('loadingOverlay');
   if(overlay) overlay.classList.toggle('active', !enabled);
 }
