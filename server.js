@@ -14,7 +14,7 @@ app.use(require('cors')({ origin: true, credentials: true }));
 app.use(express.json());
 
 const AUTH_USER = process.env.BASIC_AUTH_USER || 'admin';
-const AUTH_PASS = process.env.BASIC_AUTH_PASS || 'ARTUKcnc2026';
+const AUTH_PASS = process.env.BASIC_AUTH_PASS || 'cnc2026';
 function basicAuth(req, res, next){
   const auth = req.headers.authorization;
   if(!auth){
